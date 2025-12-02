@@ -243,8 +243,6 @@
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-}
 
 .profile-details {
   flex: 1;
