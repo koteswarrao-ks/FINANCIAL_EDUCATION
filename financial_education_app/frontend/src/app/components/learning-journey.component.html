@@ -1,0 +1,175 @@
+<div class="learning-journey-container">
+  <div class="header">
+    <h1>🎓 Financial Education Journey</h1>
+    <div class="child-selector">
+      <label>Child ID:</label>
+      <input type="text" [(ngModel)]="childId" placeholder="kid_001" />
+      <button (click)="analyzeProfile()" [disabled]="isLoadingProfile">
+        {{ isLoadingProfile ? 'Analyzing...' : 'Analyze Profile' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile Analysis Section -->
+  <div class="section profile-section" *ngIf="isLoadingProfile">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Analyzing profile and transaction data...</p>
+    </div>
+  </div>
+
+  <div class="section profile-section" *ngIf="profileError">
+    <div class="error">
+      <p>❌ {{ profileError }}</p>
+      <button (click)="analyzeProfile()">Retry</button>
+    </div>
+  </div>
+
+  <div class="section profile-section" *ngIf="showReasoning && profile">
+    <h2>📊 Profile Analysis Complete</h2>
+    
+    <div class="profile-card">
+      <h3>{{ profile.name }}'s Profile</h3>
+      <div class="profile-info">
+        <p><strong>Age:</strong> {{ profile.age }} years</p>
+        <p><strong>Grade:</strong> {{ profile.grade }}</p>
+        <p><strong>Country:</strong> {{ profile.country }}</p>
+      </div>
+    </div>
+
+    <div class="reasoning-card">
+      <h3>🧠 Analysis Reasoning</h3>
+      <div class="reasoning-item">
+        <h4>Hobbies Identified:</h4>
+        <p>{{ reasoning.hobbies }}</p>
+      </div>
+      <div class="reasoning-item">
+        <h4>Favorite Subjects:</h4>
+        <p>{{ reasoning.subjects }}</p>
+      </div>
+      <div class="reasoning-item">
+        <h4>Learning Style:</h4>
+        <p>{{ reasoning.learningStyle }}</p>
+      </div>
+      <div class="reasoning-item">
+        <h4>Pocket Money Pattern:</h4>
+        <p>{{ reasoning.pocketMoney }}</p>
+      </div>
+    </div>
+
+    <div class="personalization-card">
+      <h3>✨ Personalization Details</h3>
+      <div class="tags">
+        <span class="tag" *ngFor="let hobby of profile.personalization.hobbies">🎯 {{ hobby }}</span>
+        <span class="tag" *ngFor="let subject of profile.personalization.favoriteSubjects">📚 {{ subject }}</span>
+      </div>
+      <p><strong>Learning Style:</strong> {{ profile.personalization.preferredLearningStyle }}</p>
+      <p><strong>Pocket Money:</strong> ₹{{ profile.personalization.pocketMoney.amount }} {{ profile.personalization.pocketMoney.frequency }}</p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="loadStory()" [disabled]="isLoadingStory">
+        {{ isLoadingStory ? 'Generating Story...' : '📖 Read Stories' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Story Section -->
+  <div class="section story-section" *ngIf="isLoadingStory">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Creating a personalized story for you...</p>
+    </div>
+  </div>
+
+  <div class="section story-section" *ngIf="storyError">
+    <div class="error">
+      <p>❌ {{ storyError }}</p>
+      <button (click)="loadStory()">Retry</button>
+    </div>
+  </div>
+
+  <div class="section story-section" *ngIf="showStory && currentStory">
+    <h2>📚 {{ currentStory.title }}</h2>
+    
+    <div class="story-meta">
+      <span class="badge">Concept: {{ currentStory.concept }}</span>
+      <span class="badge">Difficulty: {{ currentStory.difficulty }}</span>
+      <span class="badge">Theme: {{ currentStory.theme }}</span>
+    </div>
+
+    <div class="story-content">
+      <div class="story-panels">
+        <div class="panel" *ngFor="let panel of currentStory.panels">
+          <div class="panel-number">{{ panel.panelId }}</div>
+          <div class="panel-text">{{ panel.text }}</div>
+        </div>
+      </div>
+      
+      <div class="full-story">
+        <h3>Full Story</h3>
+        <p class="story-text">{{ currentStory.fullStoryText }}</p>
+      </div>
+    </div>
+
+    <div class="learning-points">
+      <h3>🎯 Key Learning Points</h3>
+      <ul>
+        <li *ngFor="let point of currentStory.learningPoints">{{ point }}</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="startQuiz()" [disabled]="isLoadingQuiz">
+        {{ isLoadingQuiz ? 'Generating Quiz...' : '✅ Start Quiz' }}
+      </button>
+      <button class="btn-secondary" (click)="resetJourney()">🔄 Start New Journey</button>
+    </div>
+  </div>
+
+  <!-- Quiz Section -->
+  <div class="section quiz-section" *ngIf="isLoadingQuiz">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Preparing your quiz...</p>
+    </div>
+  </div>
+
+  <div class="section quiz-section" *ngIf="quizError">
+    <div class="error">
+      <p>❌ {{ quizError }}</p>
+      <button (click)="startQuiz()">Retry</button>
+    </div>
+  </div>
+
+  <div class="section quiz-section" *ngIf="showQuiz && currentQuiz">
+    <h2>📝 Quiz: {{ currentQuiz.concept }}</h2>
+    
+    <div class="quiz-meta">
+      <span class="badge">Difficulty: {{ currentQuiz.difficulty }}</span>
+    </div>
+
+    <div class="quiz-questions">
+      <div class="question-card" *ngFor="let question of currentQuiz.questions">
+        <h3>Question {{ question.id }}</h3>
+        <p class="question-text">{{ question.question }}</p>
+        <div class="options">
+          <button 
+            class="option-btn" 
+            *ngFor="let option of question.options; let i = index"
+            [class.correct]="option === question.correctAnswer"
+          >
+            {{ String.fromCharCode(65 + i) }}. {{ option }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-secondary" (click)="resetJourney()">🔄 Start New Journey</button>
+    </div>
+  </div>
+</div>
+
+
+

@@ -1,0 +1,179 @@
+<div class="profile-analysis-container">
+  <div class="header">
+    <h1>🔍 Profile Analysis</h1>
+    <div class="child-selector">
+      <label>Child ID:</label>
+      <input 
+        type="text" 
+        [(ngModel)]="childId" 
+        placeholder="kid_001"
+        [disabled]="isLoading"
+      />
+      <button 
+        (click)="analyzeProfile()" 
+        [disabled]="isLoading"
+        class="btn-analyze"
+      >
+        {{ isLoading ? 'Analyzing...' : 'Analyze Profile' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-section" *ngIf="isLoading">
+    <div class="loading">
+      <div class="spinner"></div>
+      <h2>Analyzing Profile...</h2>
+      <p>We're analyzing transaction data and generating personalized insights</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-section" *ngIf="error && !isLoading">
+    <div class="error-card">
+      <div class="error-icon">❌</div>
+      <h2>Analysis Failed</h2>
+      <p>{{ error }}</p>
+      <button (click)="analyzeProfile()" class="btn-retry">Retry Analysis</button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section" *ngIf="showResults && profile && reasoning">
+    <!-- Basic Profile Card -->
+    <div class="profile-card">
+      <div class="card-header">
+        <h2>👤 Child Profile</h2>
+      </div>
+      <div class="profile-content">
+        <div class="profile-avatar">
+          <div class="avatar-circle">{{ profile.name.charAt(0) }}</div>
+        </div>
+        <div class="profile-details">
+          <h3>{{ profile.name }}</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Age:</span>
+              <span class="value">{{ profile.age }} years</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Grade:</span>
+              <span class="value">{{ profile.grade }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Country:</span>
+              <span class="value">{{ profile.country }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Child ID:</span>
+              <span class="value">{{ profile.childId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Reasoning Card -->
+    <div class="reasoning-card">
+      <div class="card-header">
+        <h2>🧠 Analysis Reasoning</h2>
+        <p class="subtitle">How we determined the personalization insights</p>
+      </div>
+      <div class="reasoning-content">
+        <div class="reasoning-item">
+          <div class="reasoning-icon">🎯</div>
+          <div class="reasoning-text">
+            <h4>Hobbies Identified</h4>
+            <p>{{ reasoning.hobbies }}</p>
+          </div>
+        </div>
+        
+        <div class="reasoning-item">
+          <div class="reasoning-icon">📚</div>
+          <div class="reasoning-text">
+            <h4>Favorite Subjects</h4>
+            <p>{{ reasoning.subjects }}</p>
+          </div>
+        </div>
+        
+        <div class="reasoning-item">
+          <div class="reasoning-icon">🎨</div>
+          <div class="reasoning-text">
+            <h4>Learning Style</h4>
+            <p>{{ reasoning.learningStyle }}</p>
+          </div>
+        </div>
+        
+        <div class="reasoning-item">
+          <div class="reasoning-icon">💰</div>
+          <div class="reasoning-text">
+            <h4>Pocket Money Pattern</h4>
+            <p>{{ reasoning.pocketMoney }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personalization Details Card -->
+    <div class="personalization-card">
+      <div class="card-header">
+        <h2>✨ Personalization Insights</h2>
+        <p class="subtitle">Customized learning recommendations</p>
+      </div>
+      <div class="personalization-content">
+        <div class="insight-section">
+          <h4>🎯 Hobbies</h4>
+          <div class="tags-container">
+            <span class="tag hobby-tag" *ngFor="let hobby of profile.personalization.hobbies">
+              {{ hobby }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="insight-section">
+          <h4>📚 Favorite Subjects</h4>
+          <div class="tags-container">
+            <span class="tag subject-tag" *ngFor="let subject of profile.personalization.favoriteSubjects">
+              {{ subject }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="insight-section">
+          <h4>🎨 Preferred Learning Style</h4>
+          <div class="learning-style-badge">
+            {{ profile.personalization.preferredLearningStyle }}
+          </div>
+        </div>
+        
+        <div class="insight-section">
+          <h4>💰 Pocket Money Details</h4>
+          <div class="pocket-money-info">
+            <div class="money-amount">
+              ₹{{ profile.personalization.pocketMoney.amount }}
+            </div>
+            <div class="money-frequency">
+              {{ profile.personalization.pocketMoney.frequency }}
+            </div>
+            <div class="money-currency">
+              {{ profile.personalization.pocketMoney.currency }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="action-section">
+      <button 
+        class="btn-primary btn-large" 
+        (click)="onReadStories()"
+      >
+        📖 Read Stories
+      </button>
+    </div>
+  </div>
+</div>
+
+
+

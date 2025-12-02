@@ -1,0 +1,159 @@
+<div class="quiz-container">
+  <div class="header">
+    <h1>📝 Quiz Time!</h1>
+    <button class="btn-back" (click)="goBack()" *ngIf="!showResults">← Back</button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-section" *ngIf="isLoading && !quiz">
+    <div class="loading">
+      <div class="spinner"></div>
+      <h2>Preparing Your Quiz...</h2>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-section" *ngIf="error && !isLoading">
+    <div class="error-card">
+      <div class="error-icon">❌</div>
+      <h2>Error</h2>
+      <p>{{ error }}</p>
+      <button (click)="loadQuiz()" class="btn-retry">Retry</button>
+    </div>
+  </div>
+
+  <!-- Quiz Content -->
+  <div class="quiz-content" *ngIf="quiz && !showResults">
+    <div class="quiz-header">
+      <h2>{{ quiz.concept }} Quiz</h2>
+      <div class="quiz-meta">
+        <span class="badge">{{ quiz.difficulty }}</span>
+      </div>
+    </div>
+
+    <div class="questions-container">
+      <div 
+        class="question-card" 
+        *ngFor="let question of quiz.questions"
+      >
+        <h3 class="question-number">Question {{ question.id }}</h3>
+        <p class="question-text">{{ question.question }}</p>
+        
+        <div class="options-container">
+          <button
+            *ngFor="let option of question.options; let i = index"
+            class="option-btn"
+            [class.selected]="isAnswerSelected(question.id, option)"
+            [class.correct]="showResults && isCorrect(question.id, option)"
+            [class.wrong]="showResults && isWrong(question.id, option)"
+            [disabled]="isSubmitted"
+            (click)="selectAnswer(question.id, option)"
+          >
+            <span class="option-letter">{{ getCharCode(i) }}.</span>
+            <span class="option-text">{{ option }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="submit-section">
+      <button 
+        class="btn-submit" 
+        (click)="submitQuiz()"
+        [disabled]="getSelectedAnswersCount() !== quiz.questions.length || isSubmitted"
+      >
+        {{ isSubmitted ? 'Submitting...' : 'Submit Quiz' }}
+      </button>
+      <p class="hint" *ngIf="getSelectedAnswersCount() !== quiz.questions.length">
+        Please answer all {{ quiz.questions.length }} questions
+      </p>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section" *ngIf="showResults && submissionResult">
+    <div class="results-header">
+      <h2>🎉 Quiz Results</h2>
+      <div class="score-display">
+        <div class="score-circle" [class.passed]="passed" [class.failed]="!passed">
+          <span class="score-value">{{ score }}%</span>
+        </div>
+        <p class="score-label">{{ passed ? 'Passed!' : 'Try Again' }}</p>
+      </div>
+    </div>
+
+    <div class="results-details">
+      <div class="result-item">
+        <span class="result-label">Correct Answers:</span>
+        <span class="result-value">{{ correctAnswers }} / {{ totalQuestions }}</span>
+      </div>
+      
+      <div class="result-item" *ngIf="submissionResult.gamification">
+        <span class="result-label">Points Earned:</span>
+        <span class="result-value">+{{ score * 10 }}</span>
+      </div>
+      
+      <div class="result-item" *ngIf="submissionResult.gamification">
+        <span class="result-label">New Level:</span>
+        <span class="result-value">{{ submissionResult.gamification.level }}</span>
+      </div>
+      
+      <div class="result-item" *ngIf="submissionResult.gamification?.badges?.length">
+        <span class="result-label">New Badges:</span>
+        <div class="badges-list">
+          <span class="badge-item" *ngFor="let badge of submissionResult.gamification.badges">
+            🎖️ {{ badge }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Answers -->
+    <div class="review-section" *ngIf="quiz">
+      <h3>Review Your Answers</h3>
+      <div 
+        class="review-question" 
+        *ngFor="let question of quiz.questions"
+      >
+        <p class="review-question-text">{{ question.question }}</p>
+        <div class="review-answers">
+          <div 
+            class="review-option"
+            *ngFor="let option of question.options"
+            [class.correct-answer]="option === question.correctAnswer"
+            [class.selected-answer]="selectedAnswers[question.id] === option && option !== question.correctAnswer"
+          >
+            <span class="option-letter">{{ getCharCode(question.options.indexOf(option)) }}.</span>
+            <span class="option-text">{{ option }}</span>
+            <span class="answer-indicator" *ngIf="option === question.correctAnswer">✓ Correct</span>
+            <span class="answer-indicator wrong" *ngIf="selectedAnswers[question.id] === option && option !== question.correctAnswer">✗ Your Answer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button 
+        class="btn-primary" 
+        (click)="continueLearning()"
+        *ngIf="passed && submissionResult.nextStoryAvailable"
+      >
+        📖 Continue to Next Story
+      </button>
+      <button 
+        class="btn-secondary" 
+        (click)="goBack()"
+        *ngIf="!passed"
+      >
+        📚 Review Story Again
+      </button>
+      <button 
+        class="btn-secondary" 
+        (click)="continueLearning()"
+      >
+        🏠 Back to Home
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,15 @@
+{
+  "kid_001": {
+    "childId": "kid_001",
+    "completedTopics": [],
+    "pendingTopics": [
+      "Budgeting",
+      "Value Creation",
+      "Entrepreneurship",
+      "Earning Through Skills",
+      "Investing",
+      "Digital Money"
+    ],
+    "currentTopic": "Budgeting"
+  }
+}

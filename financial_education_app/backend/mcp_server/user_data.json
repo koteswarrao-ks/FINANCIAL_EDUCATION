@@ -1,0 +1,30 @@
+{
+    "kid_001": {
+      "childId": "kid_001",
+      "basicProfile": {
+        "name": "Aarav",
+        "age": 12,
+        "grade": "6",
+        "country": "India"
+      },
+      "transactions": [
+        {"id": "t_p1", "merchant": "Parent Transfer", "description": "Weekly Pocket Money", "amount": 200, "category": "Income", "type": "credit", "date": "2025-02-01"},
+        {"id": "t1", "merchant": "Decathlon Sports", "description": "Cricket Bat Grip", "amount": 460, "category": "Sports", "type": "debit"},
+        {"id": "t2", "merchant": "CricketZone Online", "description": "Cricket Practice Balls (Pack of 3)", "amount": 250, "category": "Sports", "type": "debit"},
+        {"id": "t3", "merchant": "Google Play Store", "description": "Cricket Scorecard Pro – Sports App", "amount": 99, "category": "Sports App", "type": "debit"},
+        {"id": "t4", "merchant": "PuzzleKart", "description": "Rubik's Cube 3x3", "amount": 299, "category": "Games & Toys", "type": "debit"},
+        {"id": "t5", "merchant": "Steam", "description": "Logic Puzzle Game – Brain Architect", "amount": 199, "category": "Puzzle Game", "type": "debit"},
+        {"id": "t6", "merchant": "ArtStation", "description": "Sketchbook A4 – 100 Pages", "amount": 180, "category": "Stationery", "type": "debit"},
+        {"id": "t7", "merchant": "Craftify Store", "description": "Charcoal Pencil Set", "amount": 120, "category": "Art Supplies", "type": "debit"},
+        {"id": "t8", "merchant": "BookWorld", "description": "Basics of Science – Illustrated Edition", "amount": 220, "category": "Books", "type": "debit"},
+        {"id": "t9", "merchant": "Amazon Kindle Kids", "description": "Fun with Math – Interactive Book", "amount": 180, "category": "Books", "type": "debit"},
+        {"id": "t10", "merchant": "Byju's App", "description": "Math Learning Module – Grade 6", "amount": 350, "category": "Educational App", "type": "debit"},
+        {"id": "t11", "merchant": "YouTube Premium", "description": "Educational Videos Subscription", "amount": 129, "category": "Subscription", "type": "debit"},
+        {"id": "t12", "merchant": "Google Play Books", "description": "Science Experiments for Kids (Illustrated)", "amount": 160, "category": "Digital Books", "type": "debit"}
+      ]
+    }
+  }
+  
+
+
+

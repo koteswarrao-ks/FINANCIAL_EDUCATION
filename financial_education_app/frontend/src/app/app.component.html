@@ -1,0 +1,16 @@
+<app-home *ngIf="currentScreen === 'home'"></app-home>
+
+<app-profile-analysis 
+  *ngIf="currentScreen === 'profile'"
+  (readStories)="navigateToStory()">
+</app-profile-analysis>
+
+<app-story-generation 
+  *ngIf="currentScreen === 'story'"
+  (backToProfile)="navigateToHome()">
+</app-story-generation>
+
+<app-quiz *ngIf="currentScreen === 'quiz'"></app-quiz>
+
+<app-rewards *ngIf="currentScreen === 'rewards'"></app-rewards>
+

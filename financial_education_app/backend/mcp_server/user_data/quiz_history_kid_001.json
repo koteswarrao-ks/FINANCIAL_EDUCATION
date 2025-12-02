@@ -1,0 +1,39 @@
+{
+  "childId": "kid_001",
+  "conceptHistory": {
+    "Budgeting": [
+      {
+        "score": 33,
+        "totalQuestions": 3,
+        "correctAnswers": 1
+      },
+      {
+        "score": 75,
+        "totalQuestions": 4,
+        "correctAnswers": 3
+      }
+    ],
+    "Value": [
+      {
+        "score": 25,
+        "totalQuestions": 4,
+        "correctAnswers": 1
+      },
+      {
+        "score": 100,
+        "totalQuestions": 3,
+        "correctAnswers": 3
+      }
+    ]
+  },
+  "weakAreas": [],
+  "strongAreas": [
+    "Budgeting",
+    "Value"
+  ],
+  "questionTypePerformance": {
+    "MCQ": 60,
+    "Scenario": 50,
+    "Calculation": 40
+  }
+}
