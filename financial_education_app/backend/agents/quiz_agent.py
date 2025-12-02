@@ -2,9 +2,23 @@ import os
 import json
 import requests
 from agno_mock import Agent
-from openai import OpenAI
+from openai import AzureOpenAI
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Azure OpenAI configuration
+azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini")
+
+if not azure_openai_api_key or not azure_openai_endpoint:
+    raise ValueError("AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT must be set in environment variables")
+
+client = AzureOpenAI(
+    api_key=azure_openai_api_key,
+    api_version=azure_openai_api_version,
+    azure_endpoint=azure_openai_endpoint
+)
+
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://127.0.0.1:5001")
 
 def fetch_quiz_history(child_id):
@@ -83,8 +97,8 @@ Return JSON:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        temperature=0.3,
+        model=azure_openai_deployment,
+        # Note: temperature parameter removed - Azure OpenAI model only supports default value
         response_format={"type": "json_object"},
         messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_prompt}]
     )

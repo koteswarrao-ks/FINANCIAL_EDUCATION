@@ -21,10 +21,10 @@ except ImportError:
 
 # Import LLM with error handling for version conflicts
 try:
-    from langchain_openai import ChatOpenAI
+    from langchain_openai import AzureChatOpenAI
 except ImportError:
     # Fallback if langchain-openai has version issues
-    ChatOpenAI = None
+    AzureChatOpenAI = None
 
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings  # Local embeddings - no API calls
@@ -120,11 +120,26 @@ Return JSON:
     ])
 
     # 4️⃣ Execute chain with LLM (semantic understanding, not keyword matching)
-    if ChatOpenAI is None:
-        raise RuntimeError("ChatOpenAI not available - check langchain-openai installation")
+    if AzureChatOpenAI is None:
+        raise RuntimeError("AzureChatOpenAI not available - check langchain-openai installation")
+    
+    # Azure OpenAI configuration
+    azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+    azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini")
+    
+    if not azure_openai_api_key or not azure_openai_endpoint:
+        raise ValueError("AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT must be set in environment variables")
     
     try:
-        model = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+        model = AzureChatOpenAI(
+            azure_deployment=azure_openai_deployment,
+            azure_endpoint=azure_openai_endpoint,
+            api_key=azure_openai_api_key,
+            api_version=azure_openai_api_version
+            # Note: temperature parameter removed - Azure OpenAI model only supports default value
+        )
         parser = JsonOutputParser()
         chain = prompt | model | parser
         

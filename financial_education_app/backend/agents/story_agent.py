@@ -2,7 +2,7 @@
 
 import os
 import json
-from openai import OpenAI
+from openai import AzureOpenAI
 from agno_mock import Agent
 from agents.learning_progress import get_next_topic
 
@@ -10,8 +10,20 @@ from agents.learning_progress import get_next_topic
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
-# OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Azure OpenAI client
+azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini")
+
+if not azure_openai_api_key or not azure_openai_endpoint:
+    raise ValueError("AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT must be set in environment variables")
+
+client = AzureOpenAI(
+    api_key=azure_openai_api_key,
+    api_version=azure_openai_api_version,
+    azure_endpoint=azure_openai_endpoint
+)
 
 # ---- RAG Setup ----
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # backend/
@@ -125,10 +137,10 @@ Return JSON EXACTLY in this format:
 }}
 """
 
-    # 5️⃣ Call OpenAI
+    # 5️⃣ Call Azure OpenAI
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        temperature=0.3,
+        model=azure_openai_deployment,
+        # Note: temperature parameter removed - Azure OpenAI model only supports default value
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_prompt},
