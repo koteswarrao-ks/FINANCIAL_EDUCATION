@@ -32,7 +32,13 @@
         </div>
         <div class="profile-info">
           <h2>{{ profile.name }}</h2>
-          <p class="profile-details">Age: {{ profile.age }} | Grade: {{ profile.grade }} | {{ profile.country }}</p>
+          <p class="profile-details">
+            <span>Age: {{ profile.age }}</span>
+            <span>•</span>
+            <span>Grade: {{ profile.grade }}</span>
+            <span>•</span>
+            <span>{{ profile.country }}</span>
+          </p>
         </div>
       </div>
       
