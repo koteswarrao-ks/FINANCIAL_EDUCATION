@@ -1,0 +1,102 @@
+{
+  "children": [
+    {
+      "childId": "kid_001",
+      "conceptHistory": {
+        "Budgeting": [
+          {
+            "score": 33,
+            "totalQuestions": 3,
+            "correctAnswers": 1
+          },
+          {
+            "score": 75,
+            "totalQuestions": 4,
+            "correctAnswers": 3
+          }
+        ],
+        "Value": [
+          {
+            "score": 25,
+            "totalQuestions": 4,
+            "correctAnswers": 1
+          },
+          {
+            "score": 100,
+            "totalQuestions": 3,
+            "correctAnswers": 3
+          },
+          {
+            "score": 50,
+            "totalQuestions": 4,
+            "correctAnswers": 2
+          }
+        ],
+        "Value Creation": [
+          {
+            "score": 40,
+            "totalQuestions": 5,
+            "correctAnswers": 2
+          }
+        ],
+        "Entrepreneurship": [
+          {
+            "score": 80,
+            "totalQuestions": 5,
+            "correctAnswers": 4
+          }
+        ],
+        "Earning Skills": [
+          {
+            "score": 50,
+            "totalQuestions": 4,
+            "correctAnswers": 2
+          }
+        ]
+      },
+      "weakAreas": [
+        "Value Creation",
+        "Value",
+        "Earning Skills"
+      ],
+      "strongAreas": [
+        "Budgeting",
+        "Entrepreneurship"
+      ],
+      "questionTypePerformance": {
+        "MCQ": 60,
+        "Scenario": 50,
+        "Calculation": 40
+      }
+    },
+    {
+      "childId": "kid_002",
+      "conceptHistory": {
+        "Budgeting": [
+          {
+            "score": 75,
+            "totalQuestions": 4,
+            "correctAnswers": 3
+          }
+        ],
+        "Value Creation": [
+          {
+            "score": 100,
+            "totalQuestions": 4,
+            "correctAnswers": 4
+          }
+        ]
+      },
+      "weakAreas": [],
+      "strongAreas": [
+        "Budgeting",
+        "Value Creation"
+      ],
+      "questionTypePerformance": {
+        "MCQ": 60,
+        "Scenario": 50,
+        "Calculation": 40
+      }
+    }
+  ]
+}

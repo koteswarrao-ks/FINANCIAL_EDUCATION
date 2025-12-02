@@ -1,6 +1,9 @@
 {
-    "kid_001": {
+  "children": [
+    {
       "childId": "kid_001",
+      "username": "aarav",
+      "password": "aarav123",
       "basicProfile": {
         "name": "Aarav",
         "age": 12,
@@ -22,8 +25,67 @@
         {"id": "t11", "merchant": "YouTube Premium", "description": "Educational Videos Subscription", "amount": 129, "category": "Subscription", "type": "debit"},
         {"id": "t12", "merchant": "Google Play Books", "description": "Science Experiments for Kids (Illustrated)", "amount": 160, "category": "Digital Books", "type": "debit"}
       ]
+    },
+    {
+      "childId": "kid_002",
+      "username": "priya",
+      "password": "priya123",
+      "basicProfile": {
+        "name": "Priya",
+        "age": 14,
+        "grade": "8",
+        "country": "India"
+      },
+      "transactions": [
+        {"id": "t_p1", "merchant": "Parent Transfer", "description": "Weekly Pocket Money", "amount": 150, "category": "Income", "type": "credit", "date": "2025-02-01"},
+        {"id": "t1", "merchant": "Art Supplies Store", "description": "Watercolor Paint Set", "amount": 350, "category": "Art Supplies", "type": "debit"},
+        {"id": "t2", "merchant": "BookStore", "description": "Story Books Collection", "amount": 450, "category": "Books", "type": "debit"},
+        {"id": "t3", "merchant": "Music Academy", "description": "Piano Lessons", "amount": 500, "category": "Education", "type": "debit"},
+        {"id": "t4", "merchant": "Toy Store", "description": "Building Blocks", "amount": 250, "category": "Games & Toys", "type": "debit"},
+        {"id": "t5", "merchant": "Stationery Shop", "description": "Colored Pencils", "amount": 120, "category": "Stationery", "type": "debit"}
+      ]
+    },
+    {
+      "childId": "kid_003",
+      "username": "rahul",
+      "password": "rahul123",
+      "basicProfile": {
+        "name": "Rahul",
+        "age": 16,
+        "grade": "10",
+        "country": "India"
+      },
+      "transactions": [
+        {"id": "t_p1", "merchant": "Parent Transfer", "description": "Weekly Pocket Money", "amount": 300, "category": "Income", "type": "credit", "date": "2025-02-01"},
+        {"id": "t1", "merchant": "Sports Store", "description": "Football", "amount": 800, "category": "Sports", "type": "debit"},
+        {"id": "t2", "merchant": "Tech Store", "description": "Calculator", "amount": 450, "category": "Electronics", "type": "debit"},
+        {"id": "t3", "merchant": "BookStore", "description": "Science Books", "amount": 600, "category": "Books", "type": "debit"},
+        {"id": "t4", "merchant": "Cafe", "description": "Snacks with Friends", "amount": 200, "category": "Food", "type": "debit"},
+        {"id": "t5", "merchant": "Movie Theater", "description": "Movie Ticket", "amount": 150, "category": "Entertainment", "type": "debit"}
+      ]
+    },
+    {
+      "childId": "kid_004",
+      "username": "sneha",
+      "password": "sneha123",
+      "basicProfile": {
+        "name": "Sneha",
+        "age": 18,
+        "grade": "12",
+        "country": "India"
+      },
+      "transactions": [
+        {"id": "t_p1", "merchant": "Parent Transfer", "description": "Weekly Pocket Money", "amount": 500, "category": "Income", "type": "credit", "date": "2025-02-01"},
+        {"id": "t1", "merchant": "BookStore", "description": "Advanced Math Books", "amount": 1200, "category": "Books", "type": "debit"},
+        {"id": "t2", "merchant": "Tech Store", "description": "Scientific Calculator", "amount": 1500, "category": "Electronics", "type": "debit"},
+        {"id": "t3", "merchant": "Online Course", "description": "Programming Course", "amount": 2000, "category": "Education", "type": "debit"},
+        {"id": "t4", "merchant": "Cafe", "description": "Study Group Snacks", "amount": 300, "category": "Food", "type": "debit"},
+        {"id": "t5", "merchant": "Gym", "description": "Monthly Gym Membership", "amount": 800, "category": "Health & Fitness", "type": "debit"},
+        {"id": "t6", "merchant": "Music Store", "description": "Guitar Strings", "amount": 250, "category": "Music", "type": "debit"}
+      ]
     }
-  }
+  ]
+}
   
 
 

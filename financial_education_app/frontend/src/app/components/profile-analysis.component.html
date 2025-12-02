@@ -122,20 +122,102 @@
       </div>
       <div class="personalization-content">
         <div class="insight-section">
-          <h4>🎯 Hobbies</h4>
-          <div class="tags-container">
+          <div class="section-header">
+            <h4>🎯 Hobbies</h4>
+            <div class="header-actions">
+              <button 
+                *ngIf="!editingHobbies" 
+                (click)="startEditingHobbies()" 
+                class="btn-edit"
+                title="Edit hobbies"
+                type="button"
+                [disabled]="!profile"
+              >
+                ✏️ Edit
+              </button>
+              <div *ngIf="editingHobbies" class="edit-controls">
+                <button (click)="cancelEditingHobbies()" class="btn-cancel" type="button">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <div class="tags-container" *ngIf="profile.personalization.hobbies && profile.personalization.hobbies.length > 0">
             <span class="tag hobby-tag" *ngFor="let hobby of profile.personalization.hobbies">
               {{ hobby }}
+              <button 
+                *ngIf="editingHobbies" 
+                (click)="deleteHobby(hobby)" 
+                class="btn-delete-tag"
+                title="Delete hobby"
+              >
+                ×
+              </button>
             </span>
+          </div>
+          <div *ngIf="!profile.personalization.hobbies || profile.personalization.hobbies.length === 0" class="empty-state">
+            <p class="empty-message">No hobbies added yet</p>
+          </div>
+          <div *ngIf="editingHobbies" class="add-item-form">
+            <input 
+              type="text" 
+              [(ngModel)]="newHobby" 
+              placeholder="Enter new hobby"
+              (keyup.enter)="addHobby()"
+              class="input-add"
+            />
+            <button (click)="addHobby()" class="btn-add">+ Add</button>
+          </div>
+          <div *ngIf="!editingHobbies && (!profile.personalization.hobbies || profile.personalization.hobbies.length === 0)" class="add-item-form">
+            <button (click)="startEditingHobbies()" class="btn-add">+ Add Hobby</button>
           </div>
         </div>
         
         <div class="insight-section">
-          <h4>📚 Favorite Subjects</h4>
-          <div class="tags-container">
+          <div class="section-header">
+            <h4>📚 Favorite Subjects</h4>
+            <div class="header-actions">
+              <button 
+                *ngIf="!editingSubjects" 
+                (click)="startEditingSubjects()" 
+                class="btn-edit"
+                title="Edit favorite subjects"
+                type="button"
+                [disabled]="!profile"
+              >
+                ✏️ Edit
+              </button>
+              <div *ngIf="editingSubjects" class="edit-controls">
+                <button (click)="cancelEditingSubjects()" class="btn-cancel" type="button">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <div class="tags-container" *ngIf="profile.personalization.favoriteSubjects && profile.personalization.favoriteSubjects.length > 0">
             <span class="tag subject-tag" *ngFor="let subject of profile.personalization.favoriteSubjects">
               {{ subject }}
+              <button 
+                *ngIf="editingSubjects" 
+                (click)="deleteSubject(subject)" 
+                class="btn-delete-tag"
+                title="Delete subject"
+              >
+                ×
+              </button>
             </span>
+          </div>
+          <div *ngIf="!profile.personalization.favoriteSubjects || profile.personalization.favoriteSubjects.length === 0" class="empty-state">
+            <p class="empty-message">No favorite subjects added yet</p>
+          </div>
+          <div *ngIf="editingSubjects" class="add-item-form">
+            <input 
+              type="text" 
+              [(ngModel)]="newSubject" 
+              placeholder="Enter new subject"
+              (keyup.enter)="addSubject()"
+              class="input-add"
+            />
+            <button (click)="addSubject()" class="btn-add">+ Add</button>
+          </div>
+          <div *ngIf="!editingSubjects && (!profile.personalization.favoriteSubjects || profile.personalization.favoriteSubjects.length === 0)" class="add-item-form">
+            <button (click)="startEditingSubjects()" class="btn-add">+ Add Subject</button>
           </div>
         </div>
         

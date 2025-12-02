@@ -1,0 +1,25 @@
+{
+  "children": [
+    {
+      "childId": "kid_001",
+      "points": 4530,
+      "level": 46,
+      "badges": [
+        "Budgeting Master",
+        "Value Master",
+        "Value Creation Master",
+        "Entrepreneurship Master",
+        "Earning Skills Master"
+      ]
+    },
+    {
+      "childId": "kid_002",
+      "points": 1750,
+      "level": 18,
+      "badges": [
+        "Budgeting Master",
+        "Value Creation Master"
+      ]
+    }
+  ]
+}

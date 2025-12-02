@@ -300,16 +300,94 @@
   gap: 30px;
 }
 
+.insight-section {
+  margin-bottom: 25px;
+}
+
 .insight-section h4 {
   color: #333;
-  margin: 0 0 15px 0;
+  margin: 0;
   font-size: 18px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  width: 100%;
+  gap: 15px;
+}
+
+.section-header h4 {
+  margin: 0;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex !important;
+  align-items: center;
+  flex-shrink: 0;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.btn-edit {
+  padding: 10px 20px;
+  background: #667eea;
+  color: white !important;
+  border: 2px solid #5568d3;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+  min-width: 80px;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 10;
+}
+
+.btn-edit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-edit:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+}
+
+.edit-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-cancel {
+  padding: 6px 12px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+  background: #5a6268;
 }
 
 .tags-container {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-bottom: 15px;
 }
 
 .tag {
@@ -317,6 +395,10 @@
   border-radius: 25px;
   font-weight: 500;
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
 }
 
 .hobby-tag {
@@ -329,6 +411,80 @@
   background: #fff4e6;
   color: #cc6600;
   border: 2px solid #ffd9b3;
+}
+
+.btn-delete-tag {
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s;
+  margin-left: 4px;
+}
+
+.btn-delete-tag:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.add-item-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.input-add {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.input-add:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-add {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-add:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  padding: 15px 0;
+  text-align: left;
+}
+
+.empty-message {
+  color: #999;
+  font-size: 14px;
+  font-style: italic;
+  margin: 0;
 }
 
 .learning-style-badge {

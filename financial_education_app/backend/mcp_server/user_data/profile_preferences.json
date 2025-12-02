@@ -1,0 +1,47 @@
+{
+  "children": [
+    {
+      "childId": "kid_003",
+      "hobbies": [
+        "Football",
+        "Movies"
+      ],
+      "favoriteSubjects": [
+        "Science",
+        "Mathematics"
+      ]
+    },
+    {
+      "childId": "kid_001",
+      "hobbies": [
+        "Cricket",
+        "Puzzles",
+        "Drawing"
+      ],
+      "favoriteSubjects": [
+        "Science",
+        "Mathematics"
+      ]
+    },
+    {
+      "childId": "kid_002",
+      "hobbies": [
+        "Know about how Finances works"
+      ],
+      "favoriteSubjects": [
+        "Mathamatics"
+      ]
+    },
+    {
+      "childId": "kid_004",
+      "hobbies": [
+        "Music (Guitar)",
+        "Fitness/Gym"
+      ],
+      "favoriteSubjects": [
+        "Mathematics",
+        "Programming"
+      ]
+    }
+  ]
+}

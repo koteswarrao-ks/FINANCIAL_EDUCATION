@@ -8,14 +8,30 @@ import { UserProfileService } from './services/user-profile.service';
 })
 export class AppComponent {
   title = 'Financial Education App';
-  currentScreen: 'home' | 'profile' | 'story' | 'quiz' | 'rewards' = 'home';
+  currentScreen: 'login' | 'home' | 'profile' | 'story' | 'quiz' | 'rewards' | 'leaderboard' = 'login';
+  expandedSections: Record<string, boolean> = {
+    input: true,
+    output: true,
+    reasoning: true
+  };
 
-  constructor(private userProfileService: UserProfileService) {
+  constructor(public userProfileService: UserProfileService) {
     // Setup navigation methods in service
-    (this.userProfileService as any).navigateToHome = () => this.navigateToHome();
-    (this.userProfileService as any).navigateToStory = () => this.navigateToStory();
-    (this.userProfileService as any).navigateToQuiz = () => this.navigateToQuiz();
-    (this.userProfileService as any).navigateToRewards = () => this.navigateToRewards();
+    this.userProfileService.navigateToHome = () => this.navigateToHome();
+    this.userProfileService.navigateToStory = () => this.navigateToStory();
+    this.userProfileService.navigateToQuiz = () => this.navigateToQuiz();
+    this.userProfileService.navigateToRewards = () => this.navigateToRewards();
+    this.userProfileService.navigateToLeaderboard = () => this.navigateToLeaderboard();
+    this.userProfileService.navigateToLogin = () => this.navigateToLogin();
+    
+    // Check if user is already logged in
+    if (this.userProfileService.currentChildId) {
+      this.currentScreen = 'home';
+    }
+  }
+
+  navigateToLogin(): void {
+    this.currentScreen = 'login';
   }
 
   navigateToHome(): void {
@@ -36,6 +52,22 @@ export class AppComponent {
 
   navigateToRewards(): void {
     this.currentScreen = 'rewards';
+  }
+
+  navigateToLeaderboard(): void {
+    this.currentScreen = 'leaderboard';
+  }
+
+  toggleLLMPanel(): void {
+    this.userProfileService.showLLMPanel = !this.userProfileService.showLLMPanel;
+  }
+
+  toggleLLMSection(section: string): void {
+    if (this.expandedSections.hasOwnProperty(section)) {
+      this.expandedSections[section] = !this.expandedSections[section];
+    } else {
+      this.expandedSections[section] = true;
+    }
   }
 }
 

@@ -28,35 +28,62 @@ export class QuizComponent implements OnInit {
     this.story = (this.userProfileService as any).currentStory;
     this.profile = (this.userProfileService as any).currentProfile;
     
+    console.log('Quiz component initialized');
+    console.log('Story from service:', this.story);
+    console.log('Profile from service:', this.profile);
+    
     if (this.story) {
+      // Verify story has required fields
+      if (!this.story.difficulty) {
+        console.warn('Story missing difficulty field, using default');
+        this.story.difficulty = 'medium';
+      }
+      if (!this.story.fullStoryText) {
+        console.warn('Story missing fullStoryText field');
+      }
       this.loadQuiz();
     } else {
       this.error = 'No story available. Please read a story first.';
+      this.isLoading = false;
+      console.error('No story available in service');
     }
   }
 
   loadQuiz(): void {
-    if (!this.story) return;
+    if (!this.story) {
+      this.error = 'No story available. Please read a story first.';
+      this.isLoading = false;
+      return;
+    }
     
     this.isLoading = true;
     this.error = null;
     
-    const request: any = { story: this.story };
-    if (this.profile) {
-      request.profile = this.profile;
-    }
+    console.log('Loading quiz for story:', this.story);
+    console.log('Story has difficulty:', this.story.difficulty);
+    console.log('Profile available:', !!this.profile);
     
     this.userProfileService.generateQuiz(this.story, this.profile).subscribe({
       next: (response) => {
-        if (response.success) {
+        console.log('Quiz response:', response);
+        if (response && response.success && response.quiz) {
           this.quiz = response.quiz;
           this.isLoading = false;
+        } else if (response && response.quiz) {
+          // Handle case where success field might be missing but quiz exists
+          this.quiz = response.quiz;
+          this.isLoading = false;
+        } else {
+          this.error = 'Invalid quiz response from server';
+          this.isLoading = false;
+          console.error('Invalid quiz response:', response);
         }
       },
       error: (error) => {
-        this.error = error.error?.detail || 'Failed to load quiz';
+        this.error = error.error?.detail || error.message || 'Failed to load quiz';
         this.isLoading = false;
         console.error('Quiz loading error:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
       }
     });
   }
@@ -78,6 +105,7 @@ export class QuizComponent implements OnInit {
     
     const submission = {
       quizId: this.quiz.quizId,
+      concept: this.quiz.concept || this.story?.concept || null, // Include concept from quiz or story
       answers: this.selectedAnswers,
       correctAnswers: correctAnswers
     };

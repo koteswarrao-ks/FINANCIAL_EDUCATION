@@ -1,0 +1,27 @@
+{
+  "children": [
+    {
+      "childId": "kid_001",
+      "completedTopics": [
+        "Budgeting",
+        "Value Creation",
+        "Entrepreneurship"
+      ],
+      "pendingTopics": [
+        "Earning Skills",
+        "Investing",
+        "Digital Money"
+      ],
+      "currentTopic": "Earning Skills"
+    },
+    {
+      "childId": "kid_002",
+      "completedTopics": [
+        "Budgeting",
+        "Value Creation"
+      ],
+      "pendingTopics": [],
+      "currentTopic": null
+    }
+  ]
+}

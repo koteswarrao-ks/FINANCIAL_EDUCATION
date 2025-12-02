@@ -7,7 +7,7 @@ import { UserProfileService } from '../services/user-profile.service';
   styleUrls: ['./rewards.component.css']
 })
 export class RewardsComponent implements OnInit {
-  childId: string = 'kid_001';
+  childId: string = '';
   rewards: any = null;
   isLoading: boolean = false;
   error: string | null = null;
@@ -15,6 +15,13 @@ export class RewardsComponent implements OnInit {
   constructor(private userProfileService: UserProfileService) {}
 
   ngOnInit(): void {
+    // Get childId from logged-in user
+    this.childId = this.userProfileService.currentChildId || '';
+    if (!this.childId) {
+      // If no childId, navigate to login
+      this.userProfileService.navigateToLogin?.();
+      return;
+    }
     this.loadRewards();
   }
 
@@ -40,6 +47,12 @@ export class RewardsComponent implements OnInit {
   goHome(): void {
     if (this.userProfileService) {
       (this.userProfileService as any).navigateToHome?.();
+    }
+  }
+
+  goToLeaderboard(): void {
+    if (this.userProfileService) {
+      (this.userProfileService as any).navigateToLeaderboard?.();
     }
   }
 

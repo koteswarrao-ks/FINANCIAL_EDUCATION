@@ -1,0 +1,108 @@
+<div class="leaderboard-container">
+  <div class="header">
+    <h1>🏆 Leaderboard</h1>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="goToRewards()">My Rewards</button>
+      <button class="btn-back" (click)="goHome()">← Home</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-section" *ngIf="isLoading">
+    <div class="loading">
+      <div class="spinner"></div>
+      <h2>Loading Leaderboard...</h2>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-section" *ngIf="error && !isLoading">
+    <div class="error-card">
+      <div class="error-icon">❌</div>
+      <h2>Error</h2>
+      <p>{{ error }}</p>
+      <button (click)="loadLeaderboard()" class="btn-retry">Retry</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Content -->
+  <div class="leaderboard-content" *ngIf="leaderboard && leaderboard.length > 0 && !isLoading">
+    <!-- Top 3 Podium -->
+    <div class="podium-section" *ngIf="leaderboard.length >= 3">
+      <div class="podium-container">
+        <div class="podium-item second" *ngIf="leaderboard[1]">
+          <div class="podium-rank">{{ getRankIcon(2) }}</div>
+          <div class="podium-avatar">{{ leaderboard[1].name.charAt(0) }}</div>
+          <div class="podium-name">{{ leaderboard[1].name }}</div>
+          <div class="podium-points">{{ leaderboard[1].points }} pts</div>
+          <div class="podium-level">Level {{ leaderboard[1].level }}</div>
+        </div>
+        <div class="podium-item first" *ngIf="leaderboard[0]">
+          <div class="podium-rank">{{ getRankIcon(1) }}</div>
+          <div class="podium-avatar">{{ leaderboard[0].name.charAt(0) }}</div>
+          <div class="podium-name">{{ leaderboard[0].name }}</div>
+          <div class="podium-points">{{ leaderboard[0].points }} pts</div>
+          <div class="podium-level">Level {{ leaderboard[0].level }}</div>
+        </div>
+        <div class="podium-item third" *ngIf="leaderboard[2]">
+          <div class="podium-rank">{{ getRankIcon(3) }}</div>
+          <div class="podium-avatar">{{ leaderboard[2].name.charAt(0) }}</div>
+          <div class="podium-name">{{ leaderboard[2].name }}</div>
+          <div class="podium-points">{{ leaderboard[2].points }} pts</div>
+          <div class="podium-level">Level {{ leaderboard[2].level }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Leaderboard List -->
+    <div class="leaderboard-list">
+      <div class="list-header">
+        <h2>All Players</h2>
+      </div>
+      <div class="leaderboard-entries">
+        <div 
+          class="leaderboard-entry" 
+          *ngFor="let entry of leaderboard; let i = index"
+          [class.current-user]="isCurrentUser(entry)"
+          [class.top-three]="entry.rank <= 3"
+        >
+          <div class="entry-rank">
+            <span class="rank-number" *ngIf="entry.rank > 3">{{ entry.rank }}</span>
+            <span class="rank-icon" *ngIf="entry.rank <= 3">{{ getRankIcon(entry.rank) }}</span>
+          </div>
+          <div class="entry-avatar">{{ entry.name.charAt(0) }}</div>
+          <div class="entry-info">
+            <div class="entry-name">
+              {{ entry.name }}
+              <span class="you-badge" *ngIf="isCurrentUser(entry)">(You)</span>
+            </div>
+            <div class="entry-details">
+              <span class="detail-item">Level {{ entry.level }}</span>
+              <span class="detail-separator">•</span>
+              <span class="detail-item">{{ entry.badges.length }} Badges</span>
+            </div>
+          </div>
+          <div class="entry-points">
+            <div class="points-value">{{ entry.points }}</div>
+            <div class="points-label">points</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="leaderboard && leaderboard.length === 0 && !isLoading">
+    <div class="empty-card">
+      <div class="empty-icon">📊</div>
+      <h2>No Players Yet</h2>
+      <p>Be the first to complete quizzes and earn points!</p>
+    </div>
+  </div>
+
+  <!-- Motivational Message -->
+  <div class="motivational-message" *ngIf="leaderboard && leaderboard.length > 0 && !isLoading">
+    <p>🎉 Keep learning to climb the leaderboard!</p>
+  </div>
+</div>
+

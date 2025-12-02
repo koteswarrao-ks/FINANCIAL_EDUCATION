@@ -28,39 +28,137 @@
       </div>
       
       <div class="profile-insights" *ngIf="profile.personalization">
-        <div class="insight-item" *ngIf="profile.personalization.hobbies && profile.personalization.hobbies.length > 0">
-          <span class="insight-icon">🎯</span>
-          <div class="insight-content">
-            <span class="insight-label">Hobbies</span>
-            <div class="insight-tags">
-              <span class="tag" *ngFor="let hobby of profile.personalization.hobbies">{{ hobby }}</span>
+        <!-- Row 1: Hobbies and Favorite Subjects (Horizontal) -->
+        <div class="insights-row">
+          <div class="insight-item insight-item-half" *ngIf="profile.personalization">
+            <span class="insight-icon">🎯</span>
+            <div class="insight-content">
+              <div class="insight-header">
+                <span class="insight-label">Hobbies</span>
+                <button 
+                  *ngIf="!editingHobbies" 
+                  (click)="startEditingHobbies()" 
+                  class="btn-edit-small"
+                  title="Edit hobbies"
+                  type="button"
+                >
+                  ✏️ Edit
+                </button>
+                <button 
+                  *ngIf="editingHobbies" 
+                  (click)="cancelEditingHobbies()" 
+                  class="btn-cancel-small"
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+              <div class="insight-tags" *ngIf="profile.personalization.hobbies && profile.personalization.hobbies.length > 0">
+                <span class="tag" *ngFor="let hobby of profile.personalization.hobbies">
+                  {{ hobby }}
+                  <button 
+                    *ngIf="editingHobbies" 
+                    (click)="deleteHobby(hobby)" 
+                    class="btn-delete-tag-small"
+                    title="Delete hobby"
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+              <div *ngIf="!profile.personalization.hobbies || profile.personalization.hobbies.length === 0" class="empty-state">
+                <p class="empty-message">No hobbies added yet</p>
+              </div>
+              <div *ngIf="editingHobbies" class="add-item-form-small">
+                <input 
+                  type="text" 
+                  [(ngModel)]="newHobby" 
+                  placeholder="Enter new hobby"
+                  (keyup.enter)="addHobby()"
+                  class="input-add-small"
+                />
+                <button (click)="addHobby()" class="btn-add-small" type="button">+ Add</button>
+              </div>
+              <div *ngIf="!editingHobbies && (!profile.personalization.hobbies || profile.personalization.hobbies.length === 0)" class="add-item-form-small">
+                <button (click)="startEditingHobbies()" class="btn-add-small" type="button">+ Add Hobby</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="insight-item insight-item-half" *ngIf="profile.personalization">
+            <span class="insight-icon">📚</span>
+            <div class="insight-content">
+              <div class="insight-header">
+                <span class="insight-label">Favorite Subjects</span>
+                <button 
+                  *ngIf="!editingSubjects" 
+                  (click)="startEditingSubjects()" 
+                  class="btn-edit-small"
+                  title="Edit favorite subjects"
+                  type="button"
+                >
+                  ✏️ Edit
+                </button>
+                <button 
+                  *ngIf="editingSubjects" 
+                  (click)="cancelEditingSubjects()" 
+                  class="btn-cancel-small"
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+              <div class="insight-tags" *ngIf="profile.personalization.favoriteSubjects && profile.personalization.favoriteSubjects.length > 0">
+                <span class="tag" *ngFor="let subject of profile.personalization.favoriteSubjects">
+                  {{ subject }}
+                  <button 
+                    *ngIf="editingSubjects" 
+                    (click)="deleteSubject(subject)" 
+                    class="btn-delete-tag-small"
+                    title="Delete subject"
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+              <div *ngIf="!profile.personalization.favoriteSubjects || profile.personalization.favoriteSubjects.length === 0" class="empty-state">
+                <p class="empty-message">No favorite subjects added yet</p>
+              </div>
+              <div *ngIf="editingSubjects" class="add-item-form-small">
+                <input 
+                  type="text" 
+                  [(ngModel)]="newSubject" 
+                  placeholder="Enter new subject"
+                  (keyup.enter)="addSubject()"
+                  class="input-add-small"
+                />
+                <button (click)="addSubject()" class="btn-add-small" type="button">+ Add</button>
+              </div>
+              <div *ngIf="!editingSubjects && (!profile.personalization.favoriteSubjects || profile.personalization.favoriteSubjects.length === 0)" class="add-item-form-small">
+                <button (click)="startEditingSubjects()" class="btn-add-small" type="button">+ Add Subject</button>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="insight-item" *ngIf="profile.personalization.favoriteSubjects && profile.personalization.favoriteSubjects.length > 0">
-          <span class="insight-icon">📚</span>
-          <div class="insight-content">
-            <span class="insight-label">Favorite Subjects</span>
-            <div class="insight-tags">
-              <span class="tag" *ngFor="let subject of profile.personalization.favoriteSubjects">{{ subject }}</span>
+        <!-- Row 2: Learning Style and Pocket Money (Horizontal) -->
+        <div class="insights-row">
+          <div class="insight-item insight-item-half" *ngIf="profile.personalization.preferredLearningStyle">
+            <span class="insight-icon">🎨</span>
+            <div class="insight-content">
+              <span class="insight-label">Learning Style</span>
+              <span class="insight-value">{{ profile.personalization.preferredLearningStyle }}</span>
             </div>
           </div>
-        </div>
-        
-        <div class="insight-item" *ngIf="profile.personalization.preferredLearningStyle">
-          <span class="insight-icon">🎨</span>
-          <div class="insight-content">
-            <span class="insight-label">Learning Style</span>
-            <span class="insight-value">{{ profile.personalization.preferredLearningStyle }}</span>
-          </div>
-        </div>
-        
-        <div class="insight-item" *ngIf="profile.personalization.pocketMoney">
-          <span class="insight-icon">💰</span>
-          <div class="insight-content">
-            <span class="insight-label">Pocket Money</span>
-            <span class="insight-value">₹{{ profile.personalization.pocketMoney.amount }} {{ profile.personalization.pocketMoney.frequency }}</span>
+          
+          <div class="insight-item insight-item-half" *ngIf="profile.personalization.pocketMoney">
+            <span class="insight-icon">💰</span>
+            <div class="insight-content">
+              <span class="insight-label">Pocket Money</span>
+              <span class="insight-value">₹{{ profile.personalization.pocketMoney.amount }} {{ profile.personalization.pocketMoney.frequency }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -73,8 +171,8 @@
     <p>Loading your profile...</p>
   </div>
   
-  <!-- Profile Error -->
-  <div class="error-message" *ngIf="error && !isLoadingProfile">
+  <!-- Profile Error - Only show if profile is not loaded -->
+  <div class="error-message" *ngIf="error && !isLoadingProfile && !profile">
     <p>❌ {{ error }}</p>
     <button (click)="loadProfile()" class="btn-retry-small">Retry</button>
   </div>
@@ -115,6 +213,11 @@
     <button class="action-btn tertiary" (click)="onViewRewards()">
       <span class="btn-icon">🏅</span>
       <span class="btn-text">My Rewards</span>
+    </button>
+    
+    <button class="action-btn secondary" (click)="onViewLeaderboard()">
+      <span class="btn-icon">🏆</span>
+      <span class="btn-text">Leaderboard</span>
     </button>
   </div>
 
