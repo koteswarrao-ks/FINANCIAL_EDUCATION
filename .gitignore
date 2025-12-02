@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+*.log
+npm-debug.log*
+
+# Build artifacts
+*.egg-info/
+build/
+*.egg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files / Cache
+*.pack
+*.idx
+.cache/
+
+# ChromaDB
+chroma_store/*.sqlite3
+chroma_store/*/
+
+# Data files (keep structure, ignore large data)
+*.pdf
+!source_pdfs/*.pdf
+
+# Temporary files
+*.tmp
+*.temp
+
