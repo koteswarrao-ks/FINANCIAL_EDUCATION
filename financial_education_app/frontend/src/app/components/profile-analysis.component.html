@@ -47,7 +47,18 @@
       </div>
       <div class="profile-content">
         <div class="profile-avatar">
-          <div class="avatar-circle">{{ profile.name.charAt(0) }}</div>
+          <div class="avatar-circle" [style.background]="avatarError ? userProfileService.getAvatarGradient(profile.name) : 'transparent'">
+            <img 
+              *ngIf="avatarUrl && !avatarError" 
+              [src]="avatarUrl" 
+              [alt]="profile.name + ' avatar'"
+              (error)="avatarError = true"
+              class="avatar-image"
+            />
+            <span *ngIf="avatarError || !avatarUrl" class="avatar-initial">
+              {{ profile.name.charAt(0) }}
+            </span>
+          </div>
         </div>
         <div class="profile-details">
           <h3>{{ profile.name }}</h3>

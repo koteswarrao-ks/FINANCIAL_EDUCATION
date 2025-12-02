@@ -14,6 +14,8 @@ export class HomeComponent implements OnInit {
   rewards: any = null;
   profile: any = null;
   reasoning: any = null;
+  avatarUrl: string = '';
+  avatarError: boolean = false;
   
   // Edit mode states
   editingHobbies: boolean = false;
@@ -22,7 +24,7 @@ export class HomeComponent implements OnInit {
   newSubject: string = '';
 
   constructor(
-    private userProfileService: UserProfileService,
+    public userProfileService: UserProfileService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -109,6 +111,11 @@ export class HomeComponent implements OnInit {
               this.userProfileService.currentProfile = response.profile;
               console.log('Profile loaded successfully:', this.profile);
               console.log('Profile name:', this.profile?.name);
+              // Generate avatar URL
+              if (this.profile?.name) {
+                this.avatarUrl = this.userProfileService.getAvatarUrl(this.profile.name, 'fun-emoji');
+                this.avatarError = false;
+              }
               this.isLoadingProfile = false;
               this.loadAndMergePreferences(); // Load and merge preferences
               this.cdr.detectChanges();
@@ -121,6 +128,11 @@ export class HomeComponent implements OnInit {
               this.error = null; // Clear any previous errors
               this.userProfileService.currentProfile = response.profile;
               console.log('Profile loaded (direct):', this.profile);
+              // Generate avatar URL
+              if (this.profile?.name) {
+                this.avatarUrl = this.userProfileService.getAvatarUrl(this.profile.name, 'fun-emoji');
+                this.avatarError = false;
+              }
               this.isLoadingProfile = false;
               this.loadAndMergePreferences(); // Load and merge preferences
               this.cdr.detectChanges();

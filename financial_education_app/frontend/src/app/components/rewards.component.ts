@@ -31,15 +31,31 @@ export class RewardsComponent implements OnInit {
     
     this.userProfileService.getRewards(this.childId).subscribe({
       next: (response) => {
-        if (response.success) {
+        if (response && response.success) {
+          this.rewards = response;
+          this.isLoading = false;
+        } else {
+          // Handle case where response doesn't have success flag
           this.rewards = response;
           this.isLoading = false;
         }
       },
       error: (error) => {
-        this.error = error.error?.detail || 'Failed to load rewards';
-        this.isLoading = false;
         console.error('Rewards loading error:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.error);
+        
+        if (error.status === 0) {
+          this.error = 'Cannot connect to backend API. Make sure it\'s running on http://localhost:8000';
+        } else if (error.status === 404) {
+          this.error = 'API endpoint not found. Check backend is running.';
+        } else if (error.status === 500) {
+          this.error = 'Server error: ' + (error.error?.detail || error.message || 'Unknown error');
+        } else {
+          this.error = error.error?.detail || error.message || 'Failed to load rewards';
+        }
+        this.isLoading = false;
       }
     });
   }

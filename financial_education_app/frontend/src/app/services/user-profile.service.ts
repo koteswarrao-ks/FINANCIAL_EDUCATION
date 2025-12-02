@@ -76,8 +76,8 @@ export interface QuizResponse {
   providedIn: 'root'
 })
 export class UserProfileService {
-  // Use network IP for cross-device access, fallback to localhost for local development
-  private apiUrl = 'http://10.50.24.29:8000/api'; // Backend API URL (network accessible)
+  // Use localhost for local development, change to network IP if accessing from another device
+  private apiUrl = 'http://localhost:8000/api'; // Backend API URL
   public currentProfile: Profile | null = null; // Store profile for other components
   public currentStory: Story | null = null; // Store story for other components
   public currentChildId: string | null = null; // Store logged-in child ID
@@ -169,6 +169,37 @@ export class UserProfileService {
       hobbies: hobbies,
       favoriteSubjects: favoriteSubjects
     });
+  }
+
+  /**
+   * Generate a cartoon avatar URL based on the child's name
+   * Uses DiceBear Avatars API (free, no API key needed)
+   */
+  getAvatarUrl(name: string, style: 'adventurer' | 'avataaars' | 'big-smile' | 'bottts' | 'fun-emoji' | 'lorelei' | 'micah' | 'miniavs' | 'open-peeps' | 'personas' | 'pixel-art' = 'fun-emoji'): string {
+    if (!name) return '';
+    // Use DiceBear Avatars - fun-emoji style for cute cartoon characters
+    const seed = name.toLowerCase().replace(/\s+/g, '-');
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&size=200`;
+  }
+
+  /**
+   * Get a random colorful gradient for avatar background (fallback)
+   */
+  getAvatarGradient(name: string): string {
+    if (!name) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    const gradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+    ];
+    // Use name to consistently pick a gradient
+    const index = name.charCodeAt(0) % gradients.length;
+    return gradients[index];
   }
 }
 

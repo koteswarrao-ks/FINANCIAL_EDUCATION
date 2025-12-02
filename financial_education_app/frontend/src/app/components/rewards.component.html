@@ -1,17 +1,42 @@
 <div class="rewards-container">
+  <!-- Animated Background Elements -->
+  <div class="bg-animation">
+    <div class="floating-star star-1">⭐</div>
+    <div class="floating-star star-2">✨</div>
+    <div class="floating-star star-3">🌟</div>
+    <div class="floating-star star-4">💫</div>
+    <div class="floating-star star-5">⭐</div>
+  </div>
+
   <div class="header">
-    <h1>🏅 My Rewards</h1>
+    <div class="header-content">
+      <div class="header-icon">🏅</div>
+      <div>
+        <h1>My Rewards</h1>
+        <p class="header-subtitle">Your Achievement Dashboard</p>
+      </div>
+    </div>
     <div class="header-actions">
-      <button class="btn-secondary" (click)="goToLeaderboard()">Leaderboard</button>
-      <button class="btn-back" (click)="goHome()">← Home</button>
+      <button class="btn-secondary" (click)="goToLeaderboard()">
+        <span class="btn-icon">🏆</span>
+        <span>Leaderboard</span>
+      </button>
+      <button class="btn-back" (click)="goHome()">
+        <span class="btn-icon">←</span>
+        <span>Home</span>
+      </button>
     </div>
   </div>
 
   <!-- Loading State -->
   <div class="loading-section" *ngIf="isLoading">
     <div class="loading">
-      <div class="spinner"></div>
+      <div class="spinner-wrapper">
+        <div class="spinner"></div>
+        <div class="spinner-ring"></div>
+      </div>
       <h2>Loading Your Rewards...</h2>
+      <p>Preparing your achievements...</p>
     </div>
   </div>
 
@@ -19,93 +44,125 @@
   <div class="error-section" *ngIf="error && !isLoading">
     <div class="error-card">
       <div class="error-icon">❌</div>
-      <h2>Error</h2>
+      <h2>Oops! Something went wrong</h2>
       <p>{{ error }}</p>
-      <button (click)="loadRewards()" class="btn-retry">Retry</button>
+      <button (click)="loadRewards()" class="btn-retry">🔄 Retry</button>
     </div>
   </div>
 
   <!-- Rewards Content -->
   <div class="rewards-content" *ngIf="rewards && !isLoading">
-    <!-- Points Card -->
-    <div class="reward-card points-card">
-      <div class="card-icon">⭐</div>
-      <div class="card-content">
-        <h2>Total Points</h2>
-        <div class="points-display">
-          <span class="points-value">{{ rewards.points }}</span>
-          <span class="points-label">points</span>
+    <!-- Hero Stats Section -->
+    <div class="hero-stats">
+      <div class="stat-card points-hero">
+        <div class="stat-glow"></div>
+        <div class="stat-icon-wrapper">
+          <div class="stat-icon">⭐</div>
+          <div class="icon-pulse"></div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Points</div>
+          <div class="stat-value-large">{{ rewards.points | number }}</div>
+          <div class="stat-description">Keep earning to level up!</div>
+        </div>
+      </div>
+
+      <div class="stat-card level-hero">
+        <div class="stat-glow"></div>
+        <div class="stat-icon-wrapper">
+          <div class="stat-icon">🏆</div>
+          <div class="icon-pulse"></div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Current Level</div>
+          <div class="stat-value-large">Level {{ rewards.level }}</div>
+          <div class="stat-description">You're doing amazing!</div>
         </div>
       </div>
     </div>
 
-    <!-- Level Card -->
-    <div class="reward-card level-card">
-      <div class="card-icon">🏆</div>
-      <div class="card-content">
-        <h2>Current Level</h2>
-        <div class="level-display">
-          <span class="level-value">Level {{ rewards.level }}</span>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="getLevelProgress()"></div>
+    <!-- Level Progress Card -->
+    <div class="progress-card">
+      <div class="progress-header">
+        <h3>🎯 Level Progress</h3>
+        <span class="level-badge">Level {{ rewards.level }}</span>
+      </div>
+      <div class="progress-visual">
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-bg">
+            <div class="progress-fill-animated" [style.width.%]="getLevelProgress()">
+              <div class="progress-shine"></div>
+            </div>
+            <div class="progress-stars">
+              <span class="progress-star" *ngFor="let i of [1,2,3,4,5]">⭐</span>
+            </div>
           </div>
-          <div class="progress-text">
-            {{ rewards.points }} / {{ getPointsForNextLevel() }} points to Level {{ rewards.level + 1 }}
-          </div>
         </div>
+        <div class="progress-info">
+          <div class="progress-current">{{ rewards.points }} points</div>
+          <div class="progress-separator">→</div>
+          <div class="progress-next">{{ getPointsForNextLevel() }} points</div>
+        </div>
+        <div class="progress-goal">Next Level: {{ rewards.level + 1 }}</div>
       </div>
     </div>
 
-    <!-- Badges Card -->
-    <div class="reward-card badges-card">
-      <div class="card-icon">🎖️</div>
-      <div class="card-content">
-        <h2>Badges Earned</h2>
-        <div class="badges-container" *ngIf="rewards.badges && rewards.badges.length > 0">
-          <div class="badge-item" *ngFor="let badge of rewards.badges">
-            <div class="badge-icon">🎖️</div>
-            <div class="badge-name">{{ badge }}</div>
-          </div>
+    <!-- Badges Showcase -->
+    <div class="badges-showcase">
+      <div class="showcase-header">
+        <h3>🎖️ Badges Collection</h3>
+        <span class="badge-count">{{ rewards.badges?.length || 0 }} Badges</span>
+      </div>
+      <div class="badges-grid" *ngIf="rewards.badges && rewards.badges.length > 0">
+        <div class="badge-card" *ngFor="let badge of rewards.badges; let i = index" [style.animation-delay.ms]="i * 100">
+          <div class="badge-glow"></div>
+          <div class="badge-icon-large">🎖️</div>
+          <div class="badge-name-large">{{ badge }}</div>
+          <div class="badge-shine"></div>
         </div>
-        <div class="no-badges" *ngIf="!rewards.badges || rewards.badges.length === 0">
-          <p>No badges yet. Complete quizzes to earn badges!</p>
-        </div>
+      </div>
+      <div class="no-badges-card" *ngIf="!rewards.badges || rewards.badges.length === 0">
+        <div class="empty-badge-icon">🎖️</div>
+        <h4>No Badges Yet</h4>
+        <p>Complete quizzes to unlock amazing badges!</p>
+        <div class="empty-badge-hint">✨ Start your learning journey to earn your first badge</div>
       </div>
     </div>
 
-    <!-- Achievement Summary -->
-    <div class="achievement-summary">
-      <h3>📊 Achievement Summary</h3>
-      <div class="summary-grid">
-        <div class="summary-item">
-          <span class="summary-icon">⭐</span>
-          <div class="summary-info">
-            <span class="summary-label">Total Points</span>
-            <span class="summary-value">{{ rewards.points }}</span>
-          </div>
-        </div>
-        <div class="summary-item">
-          <span class="summary-icon">🏆</span>
-          <div class="summary-info">
-            <span class="summary-label">Current Level</span>
-            <span class="summary-value">{{ rewards.level }}</span>
-          </div>
-        </div>
-        <div class="summary-item">
-          <span class="summary-icon">🎖️</span>
-          <div class="summary-info">
-            <span class="summary-label">Badges</span>
-            <span class="summary-value">{{ rewards.badges?.length || 0 }}</span>
-          </div>
-        </div>
+    <!-- Quick Stats Grid -->
+    <div class="quick-stats">
+      <div class="quick-stat-item">
+        <div class="quick-stat-icon">⭐</div>
+        <div class="quick-stat-value">{{ rewards.points | number }}</div>
+        <div class="quick-stat-label">Points</div>
+      </div>
+      <div class="quick-stat-item">
+        <div class="quick-stat-icon">🏆</div>
+        <div class="quick-stat-value">{{ rewards.level }}</div>
+        <div class="quick-stat-label">Level</div>
+      </div>
+      <div class="quick-stat-item">
+        <div class="quick-stat-icon">🎖️</div>
+        <div class="quick-stat-value">{{ rewards.badges?.length || 0 }}</div>
+        <div class="quick-stat-label">Badges</div>
+      </div>
+      <div class="quick-stat-item">
+        <div class="quick-stat-icon">📈</div>
+        <div class="quick-stat-value">{{ getLevelProgress() | number: '1.0-0' }}%</div>
+        <div class="quick-stat-label">Progress</div>
       </div>
     </div>
 
-    <!-- Motivational Message -->
-    <div class="motivational-message">
-      <p>🎉 Keep learning to earn more points and unlock new badges!</p>
+    <!-- Motivational Card -->
+    <div class="motivational-card">
+      <div class="motivational-icon">🎉</div>
+      <h3>Keep Learning!</h3>
+      <p>You're on an amazing journey! Every quiz you complete brings you closer to new achievements and unlocks exciting rewards.</p>
+      <div class="motivational-stars">
+        <span>⭐</span>
+        <span>✨</span>
+        <span>🌟</span>
+      </div>
     </div>
   </div>
 </div>

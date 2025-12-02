@@ -18,8 +18,17 @@
   <div class="profile-section" *ngIf="profile && profile.name">
     <div class="profile-card">
       <div class="profile-header">
-        <div class="profile-avatar-small">
-          {{ profile.name?.charAt(0) || '?' }}
+        <div class="profile-avatar-small" [style.background]="avatarError ? userProfileService.getAvatarGradient(profile.name) : 'transparent'">
+          <img 
+            *ngIf="avatarUrl && !avatarError" 
+            [src]="avatarUrl" 
+            [alt]="profile.name + ' avatar'"
+            (error)="avatarError = true"
+            class="avatar-image"
+          />
+          <span *ngIf="avatarError || !avatarUrl" class="avatar-initial">
+            {{ profile.name?.charAt(0) || '?' }}
+          </span>
         </div>
         <div class="profile-info">
           <h2>{{ profile.name }}</h2>

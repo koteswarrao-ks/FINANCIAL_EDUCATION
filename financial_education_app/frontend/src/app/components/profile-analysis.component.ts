@@ -16,6 +16,8 @@ export class ProfileAnalysisComponent implements OnInit {
   isLoading: boolean = false;
   error: string | null = null;
   showResults: boolean = false;
+  avatarUrl: string = '';
+  avatarError: boolean = false;
   
   // Edit mode states
   editingHobbies: boolean = false;
@@ -23,7 +25,7 @@ export class ProfileAnalysisComponent implements OnInit {
   newHobby: string = '';
   newSubject: string = '';
 
-  constructor(private userProfileService: UserProfileService) {}
+  constructor(public userProfileService: UserProfileService) {}
 
   ngOnInit(): void {
     // Get childId from logged-in user
@@ -49,6 +51,11 @@ export class ProfileAnalysisComponent implements OnInit {
       next: (response: ProfileAnalysisResponse) => {
         this.profile = response.profile;
         this.reasoning = response.reasoning;
+        // Generate avatar URL
+        if (this.profile?.name) {
+          this.avatarUrl = this.userProfileService.getAvatarUrl(this.profile.name, 'fun-emoji');
+          this.avatarError = false;
+        }
         this.isLoading = false;
         this.showResults = true;
         // Load and merge saved preferences after profile analysis
