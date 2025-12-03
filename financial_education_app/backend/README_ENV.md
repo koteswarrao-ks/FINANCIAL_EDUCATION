@@ -8,9 +8,12 @@
    cp .env.example .env
    ```
 
-2. **Edit `.env` file and add your OpenAI API key:**
+2. **Edit `.env` file and add your Azure OpenAI credentials:**
    ```bash
-   OPENAI_API_KEY=sk-your-actual-api-key-here
+   AZURE_OPENAI_API_KEY=your-azure-openai-api-key-here
+   AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
+   AZURE_OPENAI_API_VERSION=2024-02-15-preview
+   AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o-mini
    ```
 
 3. **Install python-dotenv (if not already installed):**
@@ -22,12 +25,20 @@
 
 ### Required
 
-- **OPENAI_API_KEY**: Your OpenAI API key for semantic analysis
-  - Get it from: https://platform.openai.com/api-keys
-  - Format: `sk-...`
+- **AZURE_OPENAI_API_KEY**: Your Azure OpenAI API key
+  - Get it from: https://portal.azure.com
+  - Navigate to your Azure OpenAI resource → Keys and Endpoint
+  - Format: `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+  
+- **AZURE_OPENAI_ENDPOINT**: Your Azure OpenAI endpoint URL
+  - Get it from: https://portal.azure.com
+  - Navigate to your Azure OpenAI resource → Keys and Endpoint
+  - Format: `https://your-resource-name.openai.azure.com`
 
 ### Optional
 
+- **AZURE_OPENAI_API_VERSION**: Azure OpenAI API version (default: `2024-02-15-preview`)
+- **AZURE_OPENAI_DEPLOYMENT_NAME**: Azure OpenAI deployment name (default: `gpt-4o-mini`)
 - **MCP_SERVER_URL**: MCP server URL (default: `http://localhost:5001`)
 - **MCP_SERVER_PORT**: MCP server port (default: `5001`)
 - **BACKEND_PORT**: Backend API port (default: `8000`)

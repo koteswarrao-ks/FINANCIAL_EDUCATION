@@ -9,6 +9,8 @@ import { ProfileAnalysisComponent } from './components/profile-analysis.componen
 import { StoryGenerationComponent } from './components/story-generation.component';
 import { QuizComponent } from './components/quiz.component';
 import { RewardsComponent } from './components/rewards.component';
+import { LeaderboardComponent } from './components/leaderboard.component';
+import { LoginComponent } from './components/login.component';
 import { UserProfileService } from './services/user-profile.service';
 
 @NgModule({
@@ -18,7 +20,9 @@ import { UserProfileService } from './services/user-profile.service';
     ProfileAnalysisComponent,
     StoryGenerationComponent,
     QuizComponent,
-    RewardsComponent
+    RewardsComponent,
+    LeaderboardComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

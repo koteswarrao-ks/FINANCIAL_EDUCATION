@@ -1,3 +1,5 @@
+<app-login *ngIf="currentScreen === 'login'"></app-login>
+
 <app-home *ngIf="currentScreen === 'home'"></app-home>
 
 <app-profile-analysis 
@@ -13,4 +15,241 @@
 <app-quiz *ngIf="currentScreen === 'quiz'"></app-quiz>
 
 <app-rewards *ngIf="currentScreen === 'rewards'"></app-rewards>
+
+<app-leaderboard *ngIf="currentScreen === 'leaderboard'"></app-leaderboard>
+
+<!-- LLM Call Details Panel (Right Side) - Available on all screens -->
+<div class="llm-panel-wrapper">
+  <button class="llm-panel-toggle" (click)="toggleLLMPanel()" title="Toggle LLM Call Details" [class.panel-open]="userProfileService.showLLMPanel" type="button">
+    <span *ngIf="!userProfileService.showLLMPanel" class="toggle-icon">🔍</span>
+    <span *ngIf="userProfileService.showLLMPanel" class="toggle-icon">✕</span>
+  </button>
+  
+  <div class="llm-panel-container" [class.open]="userProfileService.showLLMPanel">
+    <div class="llm-panel" *ngIf="userProfileService.showLLMPanel && userProfileService.llmCallDetails">
+      <div class="llm-panel-header" [class.error-header]="userProfileService.llmCallDetails.error">
+        <h3>🤖 LLM Call Details</h3>
+        <span class="llm-agent-badge" [class.error-badge]="userProfileService.llmCallDetails.error">
+          {{ userProfileService.llmCallDetails.agent || 'Profile Agent' }}
+        </span>
+      </div>
+      
+      <!-- Error Banner -->
+      <div class="llm-error-banner" *ngIf="userProfileService.llmCallDetails.error">
+        <strong>⚠️ Error:</strong> {{ userProfileService.llmCallDetails.error.error_type || 'Unknown Error' }}
+        <br>
+        <small>{{ userProfileService.llmCallDetails.error.error_message }}</small>
+      </div>
+      
+      <div class="llm-panel-content">
+        <!-- Input Section -->
+        <div class="llm-section">
+          <div class="llm-section-header" (click)="toggleLLMSection('input')">
+            <span class="llm-section-title">📥 Input</span>
+            <span class="llm-section-toggle">{{ expandedSections['input'] ? '▼' : '▶' }}</span>
+          </div>
+          <div class="llm-section-content" *ngIf="expandedSections['input'] && userProfileService.llmCallDetails.input">
+            <!-- Profile Agent Input -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Profile Agent'">
+              <div class="llm-detail-item">
+                <strong>Child ID:</strong> {{ userProfileService.llmCallDetails.input.child_id }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Transaction Count:</strong> {{ userProfileService.llmCallDetails.input.transaction_count }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Transaction Categories:</strong>
+                <div class="llm-tags">
+                  <span class="llm-tag" *ngFor="let cat of userProfileService.llmCallDetails.input.transaction_categories">{{ cat }}</span>
+                </div>
+              </div>
+              <div class="llm-detail-item">
+                <strong>RAG Context Length:</strong> {{ userProfileService.llmCallDetails.input.rag_context_length }} characters
+              </div>
+              <div class="llm-detail-item">
+                <strong>Prompt:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.input.prompt | slice:0:500 }}{{ (userProfileService.llmCallDetails.input.prompt?.length || 0) > 500 ? '...' : '' }}</pre>
+              </div>
+            </div>
+            <!-- Story Agent Input -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Story Agent'">
+              <div class="llm-detail-item">
+                <strong>Child ID:</strong> {{ userProfileService.llmCallDetails.input.child_id }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Concept:</strong> {{ userProfileService.llmCallDetails.input.concept }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Difficulty:</strong> {{ userProfileService.llmCallDetails.input.difficulty }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Profile Summary:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.input.profile_summary | json }}</pre>
+              </div>
+              <div class="llm-detail-item">
+                <strong>RAG Context Length:</strong> {{ userProfileService.llmCallDetails.input.rag_context_length }} characters
+              </div>
+              <div class="llm-detail-item">
+                <strong>RAG Context Preview:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.input.rag_context_preview }}</pre>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Prompt:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.input.prompt | slice:0:500 }}{{ (userProfileService.llmCallDetails.input.prompt?.length || 0) > 500 ? '...' : '' }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Output Section -->
+        <div class="llm-section">
+          <div class="llm-section-header" (click)="toggleLLMSection('output')">
+            <span class="llm-section-title">📤 Output</span>
+            <span class="llm-section-toggle">{{ expandedSections['output'] ? '▼' : '▶' }}</span>
+          </div>
+          <div class="llm-section-content" *ngIf="expandedSections['output'] && userProfileService.llmCallDetails.output">
+            <!-- Profile Agent Output -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Profile Agent'">
+              <div class="llm-detail-item">
+                <strong>Hobbies:</strong>
+                <div class="llm-tags">
+                  <span class="llm-tag" *ngFor="let hobby of userProfileService.llmCallDetails.output.hobbies">{{ hobby }}</span>
+                </div>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Favorite Subjects:</strong>
+                <div class="llm-tags">
+                  <span class="llm-tag" *ngFor="let subject of userProfileService.llmCallDetails.output.favoriteSubjects">{{ subject }}</span>
+                </div>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Learning Style:</strong> {{ userProfileService.llmCallDetails.output.preferredLearningStyle }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Pocket Money:</strong> ₹{{ userProfileService.llmCallDetails.output.pocketMoney?.amount }} {{ userProfileService.llmCallDetails.output.pocketMoney?.frequency }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Full Output:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.output | json }}</pre>
+              </div>
+            </div>
+            <!-- Story Agent Output -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Story Agent'">
+              <div class="llm-detail-item">
+                <strong>Story Title:</strong> {{ userProfileService.llmCallDetails.output.title }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Concept:</strong> {{ userProfileService.llmCallDetails.output.concept }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Difficulty:</strong> {{ userProfileService.llmCallDetails.output.difficulty }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Theme:</strong> {{ userProfileService.llmCallDetails.output.theme }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Panels Generated:</strong> {{ userProfileService.llmCallDetails.output.panels?.length || 0 }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Learning Points:</strong>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                  <li *ngFor="let point of userProfileService.llmCallDetails.output.learningPoints">{{ point }}</li>
+                </ul>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Full Story Output:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.output | json }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reasoning Section -->
+        <div class="llm-section">
+          <div class="llm-section-header" (click)="toggleLLMSection('reasoning')">
+            <span class="llm-section-title">💭 Reasoning</span>
+            <span class="llm-section-toggle">{{ expandedSections['reasoning'] ? '▼' : '▶' }}</span>
+          </div>
+          <div class="llm-section-content" *ngIf="expandedSections['reasoning'] && userProfileService.llmCallDetails.reasoning">
+            <!-- Profile Agent Reasoning -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Profile Agent'">
+              <div class="llm-detail-item">
+                <strong>Hobbies Inferred:</strong>
+                <div class="llm-tags">
+                  <span class="llm-tag" *ngFor="let hobby of userProfileService.llmCallDetails.reasoning.hobbies_inferred">{{ hobby }}</span>
+                </div>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Subjects Inferred:</strong>
+                <div class="llm-tags">
+                  <span class="llm-tag" *ngFor="let subject of userProfileService.llmCallDetails.reasoning.subjects_inferred">{{ subject }}</span>
+                </div>
+              </div>
+              <div class="llm-detail-item">
+                <strong>Learning Style:</strong> {{ userProfileService.llmCallDetails.reasoning.learning_style }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Pocket Money Analysis:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.reasoning.pocket_money | json }}</pre>
+              </div>
+            </div>
+            <!-- Story Agent Reasoning -->
+            <div *ngIf="userProfileService.llmCallDetails.agent === 'Story Agent'">
+              <div class="llm-detail-item">
+                <strong>Concept Selected:</strong> {{ userProfileService.llmCallDetails.reasoning.concept_selected }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Difficulty Level:</strong> {{ userProfileService.llmCallDetails.reasoning.difficulty_level }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Personalization Applied:</strong>
+                <pre class="llm-code">{{ userProfileService.llmCallDetails.reasoning.personalization_applied | json }}</pre>
+              </div>
+              <div class="llm-detail-item">
+                <strong>RAG Chunks Retrieved:</strong> {{ userProfileService.llmCallDetails.reasoning.rag_chunks_retrieved }}
+              </div>
+              <div class="llm-detail-item">
+                <strong>Story Panels Generated:</strong> {{ userProfileService.llmCallDetails.reasoning.story_panels_generated }}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Error Details Section -->
+        <div class="llm-section" *ngIf="userProfileService.llmCallDetails.error">
+          <div class="llm-section-header" (click)="toggleLLMSection('error')">
+            <span class="llm-section-title">❌ Error Details</span>
+            <span class="llm-section-toggle">{{ expandedSections['error'] ? '▼' : '▶' }}</span>
+          </div>
+          <div class="llm-section-content" *ngIf="expandedSections['error'] && userProfileService.llmCallDetails.error">
+            <div class="llm-detail-item">
+              <strong>Error Type:</strong> {{ userProfileService.llmCallDetails.error.error_type }}
+            </div>
+            <div class="llm-detail-item">
+              <strong>Error Message:</strong> {{ userProfileService.llmCallDetails.error.error_message }}
+            </div>
+            <div class="llm-detail-item" *ngIf="userProfileService.llmCallDetails.error.endpoint">
+              <strong>Endpoint:</strong> {{ userProfileService.llmCallDetails.error.endpoint }}
+            </div>
+            <div class="llm-detail-item" *ngIf="userProfileService.llmCallDetails.error.deployment">
+              <strong>Deployment:</strong> {{ userProfileService.llmCallDetails.error.deployment }}
+            </div>
+            <div class="llm-detail-item" *ngIf="userProfileService.llmCallDetails.error.attempt">
+              <strong>Failed Attempt:</strong> {{ userProfileService.llmCallDetails.error.attempt }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Timestamp -->
+        <div class="llm-timestamp" *ngIf="userProfileService.llmCallDetails.timestamp">
+          <small>🕐 {{ userProfileService.llmCallDetails.timestamp }}</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="llm-panel-empty" *ngIf="userProfileService.showLLMPanel && !userProfileService.llmCallDetails">
+      <p>No LLM call details available yet. Analyze a profile to see details.</p>
+    </div>
+  </div>
+</div>
 

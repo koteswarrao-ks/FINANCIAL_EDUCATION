@@ -21,10 +21,20 @@ def main():
 
     docs = []
     for item in data:
+        metadata = {
+            "topic": item["topic"],
+            "id": item["id"]
+        }
+        # Include source information if available (from PDFs)
+        if "source" in item:
+            metadata["source"] = item["source"]
+        if "grade" in item:
+            metadata["grade"] = item["grade"]
+        
         docs.append(
             Document(
                 page_content=item["content"],
-                metadata={"topic": item["topic"], "id": item["id"]}
+                metadata=metadata
             )
         )
 

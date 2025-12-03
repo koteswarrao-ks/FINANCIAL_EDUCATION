@@ -70,27 +70,115 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 def identify_topic(text: str) -> str:
-    """Identify which financial topic the text relates to"""
+    """Identify which financial topic the text relates to with improved classification"""
     text_lower = text.lower()
     
-    # Topic matching with priority
+    # Comprehensive topic keywords with weighted scoring
+    # Primary keywords (weight: 3), Secondary keywords (weight: 2), Related terms (weight: 1)
     topic_keywords = {
-        "Budgeting": ["budget", "budgeting", "planning money", "spend wisely", "save jar", "spend jar"],
-        "Value Creation": ["value creation", "create value", "helping others", "useful", "contribute"],
-        "Entrepreneurship": ["entrepreneur", "business", "profit", "revenue", "cost", "sell", "customer"],
-        "Earning Through Skills": ["earn", "skills", "practice", "learn", "ability", "talent"],
-        "Investing": ["invest", "investment", "interest", "grow money", "long-term", "savings account"],
-        "Digital Money": ["digital money", "upi", "online payment", "digital payment", "mobile wallet", "card payment"]
+        "Budgeting": {
+            "primary": ["budget", "budgeting", "planning money", "financial plan", "money plan"],
+            "secondary": ["spend wisely", "save jar", "spend jar", "share jar", "allocate money", 
+                         "money management", "expense", "income", "spending plan", "savings plan",
+                         "needs vs wants", "prioritize spending", "money allocation"],
+            "related": ["pocket money", "allowance", "spend", "save", "track", "plan", "divide money",
+                       "separate needs", "wants", "financial discipline", "delayed gratification"]
+        },
+        "Value Creation": {
+            "primary": ["value creation", "create value", "provide value", "add value"],
+            "secondary": ["helping others", "useful", "contribute", "benefit others", "serve others",
+                         "make a difference", "improve situation", "solve problem"],
+            "related": ["help", "assist", "support", "useful", "beneficial", "meaningful", "purpose"]
+        },
+        "Entrepreneurship": {
+            "primary": ["entrepreneur", "entrepreneurship", "start business", "business venture"],
+            "secondary": ["profit", "revenue", "cost", "sell", "customer", "market", "product", "service",
+                         "business plan", "startup", "enterprise", "venture", "selling price", "buying price",
+                         "margin", "loss", "gain", "trade", "commerce"],
+            "related": ["business", "trade", "sell", "buy", "customer", "client", "merchant", "vendor",
+                       "income from business", "earn from business", "self-employed"]
+        },
+        "Earning Through Skills": {
+            "primary": ["earn through skills", "skills-based earning", "earn with talent"],
+            "secondary": ["earn money", "earning", "income", "wage", "salary", "payment for work",
+                         "reward for skill", "monetize skill", "skill development"],
+            "related": ["skills", "practice", "learn", "ability", "talent", "expertise", "competence",
+                       "improve skills", "develop skills", "master", "proficiency", "work", "job",
+                       "employment", "career", "profession"]
+        },
+        "Investing": {
+            "primary": ["invest", "investment", "investing", "financial investment"],
+            "secondary": ["interest", "grow money", "long-term", "savings account", "fixed deposit",
+                         "mutual fund", "stocks", "shares", "returns", "dividend", "compound interest",
+                         "portfolio", "asset", "wealth creation", "financial growth"],
+            "related": ["save", "savings", "deposit", "bank", "financial institution", "grow wealth",
+                       "future goal", "retirement", "financial security", "accumulate", "multiply money"]
+        },
+        "Digital Money": {
+            "primary": ["digital money", "digital payment", "electronic payment", "cashless"],
+            "secondary": ["upi", "online payment", "mobile wallet", "card payment", "debit card",
+                         "credit card", "net banking", "internet banking", "e-wallet", "digital wallet",
+                         "qr code", "scan to pay", "online transaction"],
+            "related": ["digital", "electronic", "online", "mobile", "app", "technology", "cashless",
+                       "paperless", "transaction", "payment method", "financial technology"]
+        }
     }
     
+    # Calculate weighted scores
     scores = {}
-    for topic, keywords in topic_keywords.items():
-        score = sum(1 for keyword in keywords if keyword in text_lower)
+    for topic, keyword_groups in topic_keywords.items():
+        score = 0
+        # Primary keywords (weight: 3)
+        for keyword in keyword_groups["primary"]:
+            if keyword in text_lower:
+                score += 3
+        # Secondary keywords (weight: 2)
+        for keyword in keyword_groups["secondary"]:
+            if keyword in text_lower:
+                score += 2
+        # Related terms (weight: 1)
+        for keyword in keyword_groups["related"]:
+            if keyword in text_lower:
+                score += 1
+        
         if score > 0:
             scores[topic] = score
     
+    # If we have a clear winner (score >= 3), return it
     if scores:
-        return max(scores, key=scores.get)
+        max_score = max(scores.values())
+        if max_score >= 3:
+            # Return topic with highest score
+            return max(scores, key=scores.get)
+        # If scores are close, check for multiple strong matches
+        elif max_score >= 2:
+            # Check if there's a clear winner (at least 2 points ahead)
+            sorted_scores = sorted(scores.items(), key=lambda x: -x[1])
+            if len(sorted_scores) > 1 and sorted_scores[0][1] >= sorted_scores[1][1] + 2:
+                return sorted_scores[0][0]
+            # Otherwise return the top one
+            return sorted_scores[0][0]
+        else:
+            # Low confidence, but return best match
+            return max(scores, key=scores.get)
+    
+    # Fallback: Check for financial education context
+    financial_terms = ["money", "financial", "finance", "economic", "rupee", "currency", "wealth", 
+                       "income", "expense", "saving", "spending", "earning", "bank", "account"]
+    if any(term in text_lower for term in financial_terms):
+        # If it's clearly financial but can't classify, try to infer from context
+        if "bank" in text_lower or "account" in text_lower:
+            if "digital" in text_lower or "online" in text_lower:
+                return "Digital Money"
+            elif "interest" in text_lower or "deposit" in text_lower:
+                return "Investing"
+        elif "save" in text_lower and ("plan" in text_lower or "budget" in text_lower):
+            return "Budgeting"
+        elif "earn" in text_lower and ("skill" in text_lower or "work" in text_lower):
+            return "Earning Through Skills"
+        elif "business" in text_lower or "sell" in text_lower:
+            return "Entrepreneurship"
+    
     return "General"
 
 def chunk_text(text: str, max_chunk_size: int = 500) -> List[str]:
