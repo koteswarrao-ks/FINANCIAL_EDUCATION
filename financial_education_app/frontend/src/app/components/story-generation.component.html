@@ -1,15 +1,11 @@
 <div class="story-generation-container">
-  <div class="header">
-    <h1>📚 Story Generation</h1>
-    <button class="btn-back" (click)="goBackToProfile()">← Back to Profile</button>
-  </div>
 
   <!-- Loading State -->
   <div class="loading-section" *ngIf="isLoading && !currentStory">
     <div class="loading">
       <div class="spinner"></div>
       <h2>Loading Your Story...</h2>
-      <p>We're preparing your personalized story!</p>
+      <p>We're creating a playful adventure crafted just for your learning pathway.</p>
     </div>
   </div>
 
@@ -23,132 +19,52 @@
     </div>
   </div>
 
-  <!-- Debug Info (remove in production) -->
-  <div style="background: yellow; padding: 10px; margin: 10px; border-radius: 5px;" *ngIf="true">
-    <p><strong>Story Debug Info:</strong></p>
-    <p>isLoading: {{ isLoading }}</p>
-    <p>showStory: {{ showStory }}</p>
-    <p>currentStory exists: {{ !!currentStory }}</p>
-    <p>currentStory title: {{ currentStory?.title }}</p>
-    <p>error: {{ error }}</p>
-  </div>
-
   <!-- Story Display -->
   <div class="story-section" *ngIf="showStory && currentStory && currentStory.title">
-    <!-- Story Header -->
-    <div class="story-header">
-      <h2>{{ currentStory.title }}</h2>
-      <div class="story-meta">
-        <span class="badge concept-badge">{{ currentStory.concept }}</span>
-        <span class="badge difficulty-badge">{{ currentStory.difficulty }}</span>
-        <span class="badge theme-badge">{{ currentStory.theme }}</span>
+    <div class="story-block-card">
+      <div class="story-block-header">
+        <div>
+          <h1>Story Generation · {{ currentStory.title }}</h1>
+        </div>
+        <button class="btn-back" (click)="goBackToProfile()">← Back to Profile</button>
       </div>
-    </div>
+      <div class="story-shell">
+        <div class="hero-section">
+          <div class="hero-badges-row">
+            <span class="hero-badge primary">Concept · {{ currentStory.concept }}</span>
+            <span class="hero-badge secondary">Difficulty · {{ currentStory.difficulty }}</span>
+            <span class="hero-badge tertiary">Theme · {{ currentStory.theme }}</span>
+          </div>
+        </div>
 
-    <!-- Story Panels Navigation -->
-    <div class="panels-navigation" *ngIf="currentStory.panels.length > 0">
-      <div class="panel-indicators">
-        <button 
-          *ngFor="let panel of currentStory.panels; let i = index"
-          class="panel-indicator"
-          [class.active]="i === currentPanelIndex"
-          (click)="goToPanel(i)"
-        >
-          {{ i + 1 }}
-        </button>
-      </div>
-      <div class="panel-controls">
-        <button 
-          class="btn-nav" 
-          (click)="previousPanel()"
-          [disabled]="currentPanelIndex === 0"
-        >
-          ← Previous
-        </button>
-        <span class="panel-counter">
-          Panel {{ currentPanelIndex + 1 }} of {{ currentStory.panels.length }}
-        </span>
-        <button 
-          class="btn-nav" 
-          (click)="nextPanel()"
-          [disabled]="currentPanelIndex === currentStory.panels.length - 1"
-        >
-          Next →
-        </button>
-      </div>
-    </div>
-
-    <!-- Current Panel Display -->
-    <div class="panel-display" *ngIf="currentStory.panels[currentPanelIndex]">
-      <div class="panel-card">
-        <div class="panel-number-large">{{ currentPanelIndex + 1 }}</div>
-        <div class="panel-content">
-          <h3>Panel {{ currentPanelIndex + 1 }}</h3>
-          <p class="panel-text">{{ currentStory.panels[currentPanelIndex].text }}</p>
+      <div class="full-story-card">
+        <p class="full-story-label">Full Story</p>
+        <div class="full-story-text hero-story-text">
+          <p>{{ currentStory.fullStoryText }}</p>
         </div>
       </div>
-    </div>
 
-    <!-- All Panels Grid View -->
-    <div class="all-panels-section">
-      <h3>📖 Complete Story</h3>
-      <div class="panels-grid">
-        <div 
-          class="panel-mini-card" 
-          *ngFor="let panel of currentStory.panels; let i = index"
-          [class.active]="i === currentPanelIndex"
-          (click)="goToPanel(i)"
-        >
-          <div class="panel-mini-number">{{ panel.panelId }}</div>
-          <p class="panel-mini-text">{{ panel.text }}</p>
+        <div class="learning-card">
+        <div class="learning-header">
+          <h3>Key Learning Points</h3>
+          <p>These summarize the financial concept from today’s adventure.</p>
+        </div>
+        <div class="learning-points-list">
+          <div class="learning-point-item" *ngFor="let point of currentStory.learningPoints; let i = index">
+            <div class="point-icon">✓</div>
+            <p class="point-text">{{ point }}</p>
+          </div>
+        </div>
+        <div class="learning-footnote">
+          <p>Tip: Ask your learner to retell one of these points in their own words.</p>
         </div>
       </div>
-    </div>
 
-    <!-- Full Story Text -->
-    <div class="full-story-section">
-      <h3>📝 Full Story Text</h3>
-      <div class="full-story-text">
-        <p>{{ currentStory.fullStoryText }}</p>
-      </div>
-    </div>
-
-    <!-- Learning Points -->
-    <div class="learning-points-section">
-      <h3>🎯 Key Learning Points</h3>
-      <div class="learning-points-list">
-        <div 
-          class="learning-point-item" 
-          *ngFor="let point of currentStory.learningPoints; let i = index"
-        >
-          <div class="point-number">{{ i + 1 }}</div>
-          <div class="point-text">{{ point }}</div>
+        <div class="actions-footer">
+        <button class="btn-primary wide" (click)="onStartQuiz()">✅ Start Quiz</button>
+        <button class="btn-ghost wide" (click)="generateStory()">🔄 Regenerate Story</button>
         </div>
       </div>
-    </div>
-
-    <!-- Next Concept Recommendation -->
-    <div class="next-concept-section" *ngIf="currentStory.nextRecommendedConcept">
-      <div class="next-concept-card">
-        <h4>💡 Next Recommended Concept</h4>
-        <p>{{ currentStory.nextRecommendedConcept }}</p>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="action-section">
-      <button 
-        class="btn-primary btn-large" 
-        (click)="onStartQuiz()"
-      >
-        ✅ Start Quiz
-      </button>
-      <button 
-        class="btn-secondary" 
-        (click)="generateStory()"
-      >
-        🔄 Generate New Story
-      </button>
     </div>
   </div>
 </div>
