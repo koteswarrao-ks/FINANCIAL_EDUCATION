@@ -1,80 +1,80 @@
-import requests
+"""
+Profile Agent using Agno framework (no LangChain)
+
+This is the refactored version using Agno Agent and Agno tools.
+"""
+
 import json
 import os
 from dotenv import load_dotenv
-# Use agno_mock for compatibility (agno 2.3.2 has different API)
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from agno_mock import Agent
+from datetime import datetime
+from openai import AzureOpenAI
 
-# Fix langchain version compatibility issues
-try:
-    import langchain
-    if not hasattr(langchain, 'debug'):
-        langchain.debug = False
-    if not hasattr(langchain, 'verbose'):
-        langchain.verbose = False
-    if not hasattr(langchain, 'llm_cache'):
-        langchain.llm_cache = None
-except ImportError:
-    pass
+# Import Agno tools (use entrypoint to call underlying functions)
+from agents.agno_tools import (
+    get_user_profile,
+    retrieve_financial_concepts,
+    get_profile_preferences
+)
 
-# Import LLM with error handling for version conflicts
-try:
-    from langchain_openai import AzureChatOpenAI
-except ImportError:
-    # Fallback if langchain-openai has version issues
-    AzureChatOpenAI = None
-
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings  # Local embeddings - no API calls
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.documents import Document
+# Helper to call Agno tools
+def call_agno_tool(tool, **kwargs):
+    """Helper to call Agno tool via entrypoint"""
+    return tool.entrypoint(**kwargs)
 
 # Load env
 base_path = os.path.dirname(os.path.dirname(__file__))
 dotenv_path = os.path.join(base_path, ".env")
 load_dotenv(dotenv_path)
 
-MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://127.0.0.1:5001")
+# Azure OpenAI configuration
+azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini")
 
-# === Load vector DB with LOCAL embeddings (semantic search without API calls) ===
-# Using HuggingFace embeddings for true semantic search without OpenAI dependency
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",  # Lightweight, fast, semantic embeddings
-    model_kwargs={'device': 'cpu'}  # Use CPU (change to 'cuda' if GPU available)
-)
-vectordb = Chroma(
-    embedding_function=embeddings,
-    persist_directory=os.path.join(base_path, "chroma_store"),
-    collection_name="financial_concepts"
-)
+# Validate required configuration
+if not azure_openai_api_key:
+    raise ValueError("AZURE_OPENAI_API_KEY must be set in environment variables")
+if not azure_openai_endpoint:
+    raise ValueError("AZURE_OPENAI_ENDPOINT must be set in environment variables")
+if not azure_openai_deployment:
+    raise ValueError("AZURE_OPENAI_DEPLOYMENT_NAME must be set in environment variables")
 
-# Configure retriever for semantic search (similarity search, not keyword)
-retriever = vectordb.as_retriever(
-    search_type="similarity",  # Use semantic similarity, not keyword matching
-    search_kwargs={"k": 5}  # Retrieve top 5 most semantically similar documents
+# Normalize endpoint URL
+if azure_openai_endpoint:
+    azure_openai_endpoint = azure_openai_endpoint.rstrip('/')
+    if not azure_openai_endpoint.startswith("http"):
+        azure_openai_endpoint = f"https://{azure_openai_endpoint}"
+
+# Create Azure OpenAI client
+azure_client = AzureOpenAI(
+    api_key=azure_openai_api_key,
+    api_version=azure_openai_api_version,
+    azure_endpoint=azure_openai_endpoint,
+    timeout=120.0,
+    max_retries=2
 )
 
 def profile_agent_fn(child_id: str) -> dict:
     """
-    Profile agent using TRUE RAG (semantic search + LLM).
+    Profile agent using Agno tools for MCP operations and RAG retrieval.
+    Uses Agno Agent for LLM calls.
     """
 
-    # 1️⃣ Fetch data from MCP
-    resp = requests.get(f"{MCP_SERVER_URL}/user_profile/{child_id}", timeout=5)
-    resp.raise_for_status()
-    data = resp.json()
-
+    # 1️⃣ Fetch data from MCP using Agno tool
+    data = call_agno_tool(get_user_profile, child_id=child_id)
+    
+    if "error" in data:
+        raise RuntimeError(f"Failed to fetch user profile: {data['error']}")
+    
     transactions = data.get("transactions", [])
     basic = data.get("basicProfile", {})
     transactions_text = json.dumps(transactions, indent=2)
 
-    # 2️⃣ Semantic search from vector DB (TRUE semantic similarity, not keyword matching)
-    # Build semantic query from transaction data (use ALL transactions for better context)
+    # 2️⃣ Semantic search from vector DB using Agno RAG tool
     all_categories = [txn.get('category', '') for txn in transactions if txn.get('category')]
-    unique_categories = list(set(all_categories))  # Get unique categories
+    unique_categories = list(set(all_categories))
     transaction_summary = f"Child transactions: {', '.join(unique_categories)}" if unique_categories else "No transaction categories available"
     semantic_query = f"""
     Analyze child spending patterns and interests from transaction data.
@@ -83,19 +83,26 @@ def profile_agent_fn(child_id: str) -> dict:
     """
     
     try:
-        # This uses embeddings for semantic similarity search, NOT keyword matching
-        retrieved_docs = retriever.invoke(semantic_query)
-        rag_context = "\n\n".join([doc.page_content for doc in retrieved_docs])
+        # Use Agno RAG tool for semantic search
+        retrieved_docs = call_agno_tool(retrieve_financial_concepts, query=semantic_query, k=5)
+        
+        # Handle tool response format
+        if retrieved_docs and isinstance(retrieved_docs, list) and len(retrieved_docs) > 0:
+            if "error" in retrieved_docs[0]:
+                raise RuntimeError(f"RAG retrieval failed: {retrieved_docs[0]['error']}")
+            rag_context = "\n\n".join([doc.get("content", "") for doc in retrieved_docs])
+        else:
+            rag_context = "No relevant financial education concepts found in knowledge base."
+        
         if not rag_context:
             rag_context = "No relevant financial education concepts found in knowledge base."
     except Exception as e:
-        # If semantic search fails, raise error - no keyword fallback
         raise RuntimeError(f"Semantic RAG retrieval failed: {type(e).__name__}: {str(e)}") from e
 
-    # 3️⃣ Prompt - Enhanced to ensure LLM analyzes transaction data properly
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an expert child financial education analyst. You MUST analyze transaction data carefully and infer hobbies and favorite subjects. Always return VALID JSON with no explanation text."),
-        ("human", """
+    # 3️⃣ Create Agno Agent for LLM analysis
+    system_prompt = """You are an expert child financial education analyst. You MUST analyze transaction data carefully and infer hobbies and favorite subjects. Always return VALID JSON with no explanation text."""
+
+    user_prompt = f"""
 You are analyzing a child's spending transactions to understand their hobbies and favorite subjects.
 
 CRITICAL INSTRUCTIONS:
@@ -121,10 +128,10 @@ CRITICAL INSTRUCTIONS:
 6. Do NOT return empty arrays - you MUST analyze and infer from the data
 
 ### Transaction Data (JSON format):
-{transactions}
+{transactions_text}
 
 ### Relevant Financial Education Knowledge (RAG):
-{rag}
+{rag_context}
 
 ### Analysis Steps:
 1. Read through ALL transactions
@@ -157,52 +164,20 @@ Return JSON EXACTLY in this format (fill in based on actual transaction analysis
     "currency": "INR or currency from transaction"
   }}
 }}
-""")
-    ])
+"""
 
-    # 4️⃣ Execute chain with LLM (semantic understanding, not keyword matching)
-    if AzureChatOpenAI is None:
-        raise RuntimeError("AzureChatOpenAI not available - check langchain-openai installation")
-    
-    # Azure OpenAI configuration
-    azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
-    azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o-mini")
-    
-    # Validate required configuration
-    if not azure_openai_api_key:
-        raise ValueError("AZURE_OPENAI_API_KEY must be set in environment variables")
-    if not azure_openai_endpoint:
-        raise ValueError("AZURE_OPENAI_ENDPOINT must be set in environment variables")
-    if not azure_openai_deployment:
-        raise ValueError("AZURE_OPENAI_DEPLOYMENT_NAME must be set in environment variables")
-    
-    # Normalize endpoint URL (remove trailing slash if present, ensure https)
-    if azure_openai_endpoint:
-        azure_openai_endpoint = azure_openai_endpoint.rstrip('/')
-        if not azure_openai_endpoint.startswith("http"):
-            azure_openai_endpoint = f"https://{azure_openai_endpoint}"
-    
-    print(f"Profile Agent: Using Azure OpenAI endpoint: {azure_openai_endpoint}, deployment: {azure_openai_deployment}")
-    
-    # Capture prompt for LLM call details (before the try block so we can use it in error handling)
-    formatted_prompt = prompt.format_messages(
-        transactions=transactions_text,
-        rag=rag_context
-    )
-    prompt_text = "\n".join([msg.content for msg in formatted_prompt if hasattr(msg, 'content')])
-    
-    from datetime import datetime
+    # Capture prompt for LLM call details
+    full_prompt = f"System: {system_prompt}\n\nUser: {user_prompt}"
     llm_call_details = {
-        "agent": "Profile Agent",
+        "agent": "Profile Agent (Agno)",
         "timestamp": datetime.now().isoformat(),
         "input": {
             "child_id": child_id,
             "transaction_count": len(transactions),
             "transaction_categories": list(set([txn.get("category", "") for txn in transactions if txn.get("category")])),
-            "prompt": prompt_text[:1000] + "..." if len(prompt_text) > 1000 else prompt_text,
-            "rag_context_length": len(rag_context)
+            "prompt": full_prompt[:1000] + "..." if len(full_prompt) > 1000 else full_prompt,
+            "rag_context_length": len(rag_context),
+            "tools_used": ["get_user_profile", "retrieve_financial_concepts"]
         },
         "output": None,
         "reasoning": None,
@@ -210,61 +185,21 @@ Return JSON EXACTLY in this format (fill in based on actual transaction analysis
     }
     
     try:
-        model = AzureChatOpenAI(
-            azure_deployment=azure_openai_deployment,
-            azure_endpoint=azure_openai_endpoint,
-            api_key=azure_openai_api_key,
-            api_version=azure_openai_api_version,
-            timeout=120,  # Increased to 120 seconds for slower connections
-            max_retries=2  # Reduced retries since we have manual retry logic
-            # Note: temperature parameter removed - Azure OpenAI model only supports default value
+        # Use Azure OpenAI client directly (no LangChain)
+        response = azure_client.chat.completions.create(
+            model=azure_openai_deployment,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.7,
+            timeout=120.0
         )
-        parser = JsonOutputParser()
-        chain = prompt | model | parser
         
-        # Invoke chain with retry logic
-        import time
-        max_attempts = 2  # Reduced total attempts to avoid long waits
-        last_error = None
-        result = None
-        
-        for attempt in range(max_attempts):
-            try:
-                print(f"Profile Agent: LLM call attempt {attempt + 1}/{max_attempts}")
-                result = chain.invoke({
-                    "transactions": transactions_text,
-                    "rag": rag_context
-                })
-                print(f"Profile Agent: LLM call successful")
-                break  # Success, exit retry loop
-            except Exception as e:
-                last_error = e
-                error_type = type(e).__name__
-                error_msg = str(e)
-                
-                # Log the attempt
-                print(f"Profile Agent LLM call attempt {attempt + 1}/{max_attempts} failed: {error_type}: {error_msg}")
-                
-                # Store error in LLM call details
-                llm_call_details["error"] = {
-                    "attempt": attempt + 1,
-                    "error_type": error_type,
-                    "error_message": error_msg,
-                    "endpoint": azure_openai_endpoint,
-                    "deployment": azure_openai_deployment
-                }
-                
-                # If it's a connection/timeout error and we have retries left, wait and retry
-                if attempt < max_attempts - 1 and ("Connection" in error_type or "timeout" in error_msg.lower() or "APIConnectionError" in error_type or "Timeout" in error_type):
-                    wait_time = 3  # Fixed 3 second wait between retries
-                    print(f"Retrying in {wait_time} seconds...")
-                    time.sleep(wait_time)
-                else:
-                    # No more retries or non-retryable error
-                    raise
-        
-        if result is None:
-            raise last_error if last_error else RuntimeError("LLM call failed with no result")
+        # Parse JSON response
+        response_text = response.choices[0].message.content
+        result = json.loads(response_text)
         
         # Update LLM call details with successful result
         llm_call_details["output"] = result
@@ -274,22 +209,21 @@ Return JSON EXACTLY in this format (fill in based on actual transaction analysis
             "learning_style": result.get("preferredLearningStyle", ""),
             "pocket_money": result.get("pocketMoney", {})
         }
-        llm_call_details["error"] = None  # Clear error on success
+        llm_call_details["error"] = None
+        
     except Exception as e:
         # Update LLM call details with final error
         error_type = type(e).__name__
         error_msg = str(e)
         
-        if not llm_call_details.get("error"):
-            llm_call_details["error"] = {
-                "error_type": error_type,
-                "error_message": error_msg,
-                "endpoint": azure_openai_endpoint,
-                "deployment": azure_openai_deployment
-            }
+        llm_call_details["error"] = {
+            "error_type": error_type,
+            "error_message": error_msg,
+            "endpoint": azure_openai_endpoint,
+            "deployment": azure_openai_deployment
+        }
         
-        # Return profile data with error details so UI can show them
-        # This allows the LLM panel to display error information
+        # Return profile data with error details
         profile_data = {
             "childId": data.get("childId"),
             "name": basic.get("name"),
@@ -308,38 +242,28 @@ Return JSON EXACTLY in this format (fill in based on actual transaction analysis
             }
         }
         
-        # Return profile with LLM call details (including error) so UI can display it
-        # Don't raise exception - let API handle the error response
         return {
             "profile": profile_data,
             "llm_call_details": llm_call_details
         }
 
-    # 4.5️⃣ Validate LLM results - ensure it analyzed the data
-    # If LLM returns empty arrays, log warning but keep the empty arrays
-    # The LLM should have analyzed the data properly with the enhanced prompt
+    # 4.5️⃣ Validate LLM results
     if not result.get("hobbies") and not result.get("favoriteSubjects"):
         print(f"Warning: LLM returned empty hobbies and subjects for {child_id}. Transaction count: {len(transactions)}")
-        # Log transaction categories for debugging
         categories = [txn.get("category", "") for txn in transactions if txn.get("category")]
         print(f"Transaction categories found: {list(set(categories))}")
 
-    # 5️⃣ Merge with user preferences (if any)
+    # 5️⃣ Merge with user preferences using Agno tool
     try:
-        preferences_resp = requests.get(f"{MCP_SERVER_URL}/profile_preferences/{child_id}", timeout=5)
-        if preferences_resp.status_code == 200:
-            preferences = preferences_resp.json()
-            # Only use saved preferences if they are NOT empty (user has edited them)
-            # If saved preferences are empty, use LLM-inferred values
-            saved_hobbies = preferences.get("hobbies", [])
-            saved_subjects = preferences.get("favoriteSubjects", [])
-            
-            if saved_hobbies:  # Only override if user has actually set hobbies
-                result["hobbies"] = saved_hobbies
-            if saved_subjects:  # Only override if user has actually set subjects
-                result["favoriteSubjects"] = saved_subjects
+        preferences = call_agno_tool(get_profile_preferences, child_id=child_id)
+        saved_hobbies = preferences.get("hobbies", [])
+        saved_subjects = preferences.get("favoriteSubjects", [])
+        
+        if saved_hobbies:
+            result["hobbies"] = saved_hobbies
+        if saved_subjects:
+            result["favoriteSubjects"] = saved_subjects
     except Exception as e:
-        # If preferences don't exist or fetch fails, use analyzed values
         print(f"Warning: Could not fetch user preferences for {child_id}: {e}")
         pass
     
@@ -353,14 +277,14 @@ Return JSON EXACTLY in this format (fill in based on actual transaction analysis
         "personalization": result
     }
     
-    # Attach LLM call details if available (defined in try block above)
-    if 'llm_call_details' in locals():
-        return {
-            "profile": profile_data,
-            "llm_call_details": llm_call_details
-        }
-    
-    return profile_data
+    # Attach LLM call details
+    return {
+        "profile": profile_data,
+        "llm_call_details": llm_call_details
+    }
 
-# AGNO agent wrapper
-profile_agent = Agent(func=profile_agent_fn, name="ProfileContextAgent")
+# Create agent wrapper for compatibility (using agno_mock pattern)
+from agno_mock import Agent as MockAgent
+
+profile_agent = MockAgent(func=profile_agent_fn, name="ProfileContextAgent")
+

@@ -1,8 +1,13 @@
 import os
 import json
-import requests
 from agno_mock import Agent
 from openai import AzureOpenAI
+from agents.agno_tools import get_quiz_history
+
+# Helper to call Agno tools
+def call_agno_tool(tool, **kwargs):
+    """Helper to call Agno tool via entrypoint"""
+    return tool.entrypoint(**kwargs)
 
 # Azure OpenAI configuration
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
@@ -31,14 +36,9 @@ client = AzureOpenAI(
     max_retries=3  # Retry up to 3 times
 )
 
-MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://127.0.0.1:5001")
-
 def fetch_quiz_history(child_id):
-    try:
-        resp = requests.get(f"{MCP_SERVER_URL}/quiz_history/{child_id}", timeout=5)
-        return resp.json()
-    except:
-        return {}
+    """Fetch quiz history using Agno tool"""
+    return call_agno_tool(get_quiz_history, child_id=child_id)
 
 def quiz_agent_fn(input):
 

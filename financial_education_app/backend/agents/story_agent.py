@@ -5,10 +5,12 @@ import json
 from openai import AzureOpenAI
 from agno_mock import Agent
 from agents.learning_progress import get_next_topic
+from agents.agno_tools import retrieve_financial_concepts_by_topic
 
-# ---- RAG Dependencies ----
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+# Helper to call Agno tools
+def call_agno_tool(tool, **kwargs):
+    """Helper to call Agno tool via entrypoint"""
+    return tool.entrypoint(**kwargs)
 
 # Azure OpenAI client
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
@@ -36,26 +38,6 @@ client = AzureOpenAI(
     timeout=60.0,  # 60 second timeout
     max_retries=3  # Retry up to 3 times
 )
-
-# ---- RAG Setup ----
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # backend/
-RAG_DIR = os.path.join(BASE_DIR, "rag")
-CHROMA_PATH = os.path.join(RAG_DIR, "chroma_store")
-
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",
-    model_kwargs={"device": "cpu"}
-)
-
-vectordb = Chroma(
-    embedding_function=embeddings,
-    persist_directory=CHROMA_PATH,
-    collection_name="financial_concepts"  # Match ingest_kb.py collection name
-)
-
-# Retrieve more documents to get diverse sources (original KB + PDFs)
-# Increased k from 2 to 5 to ensure we get a mix of sources
-retriever = vectordb.as_retriever(search_kwargs={"k": 5})
 
 
 def story_agent_fn(input):
@@ -96,115 +78,84 @@ def story_agent_fn(input):
         "complex"
     )
 
-    # 3️⃣ Retrieve authoritative KB via RAG (from both original KB and PDFs)
+    # 3️⃣ Retrieve authoritative KB via RAG using tool
     print(f"\n🔍 RAG Retrieval for concept: '{concept}'")
     
-    # Strategy: Get ALL entries matching the exact topic, then randomly select
-    # This ensures we get all 39 "Earning Through Skills" entries, not just top similarity matches
-    import random
-    
-    try:
-        # Method 1: Try to get ALL entries by using a very large k and filtering by topic
-        # Retrieve a large number to ensure we get all matching entries
-        all_docs = vectordb.similarity_search_with_score(concept, k=100)
-        all_docs = [doc for doc, score in all_docs]  # Extract just the documents
-        
-        # Filter to ONLY entries that match the exact topic (case-insensitive)
-        topic_matched_docs = [
-            d for d in all_docs 
-            if d.metadata.get("topic", "").lower() == concept.lower()
-        ]
-        
-        print(f"   📊 Found {len(topic_matched_docs)} entries matching topic '{concept}'")
-        
-        if len(topic_matched_docs) > 0:
-            # Randomly shuffle and select from ALL topic-matched entries
-            random.shuffle(topic_matched_docs)
-            # Select up to 5 random entries from all matching topic entries
-            docs = topic_matched_docs[:5]
-            print(f"   ✅ Randomly selected {len(docs)} entries from {len(topic_matched_docs)} total entries for topic '{concept}'")
-            
-            # Log which entries were selected for debugging
-            selected_ids = [d.metadata.get("id", "unknown") for d in docs]
-            print(f"   📝 Selected entry IDs: {', '.join(selected_ids)}")
-        else:
-            # Fallback: if no exact topic match, use standard retrieval
-            print(f"   ⚠️  No exact topic match found, using standard retrieval")
-            docs = retriever.invoke(concept)
-            
-    except Exception as e:
-        # Fallback to standard retrieval if similarity_search_with_score fails
-        print(f"   ⚠️  Error in topic-filtered retrieval: {e}, using standard retrieval")
-        try:
-            # Try alternative: use retriever with large k
-            retriever_large = vectordb.as_retriever(search_kwargs={"k": 100})
-            all_docs = retriever_large.invoke(concept)
-            topic_matched_docs = [
-                d for d in all_docs 
-                if d.metadata.get("topic", "").lower() == concept.lower()
-            ]
-            if topic_matched_docs:
-                random.shuffle(topic_matched_docs)
-                docs = topic_matched_docs[:5]
-                print(f"   ✅ Randomly selected {len(docs)} entries from {len(topic_matched_docs)} total (fallback method)")
-            else:
-                docs = retriever.invoke(concept)
-        except:
-            docs = retriever.invoke(concept)
-    
+    # Initialize variables (will be set in try block)
+    retrieved_docs = []
     rag_chunks = []
-    source_attributions = []  # Track detailed source information for proof
+    source_attributions = []
     pdf_sources_used = set()
     original_kb_count = 0
+    rag_context = ""
     
-    for d in docs:
-        source_info = d.metadata.get("source", "original knowledge base")
-        topic = d.metadata.get("topic", concept)
-        entry_id = d.metadata.get("id", "unknown")
-        grade = d.metadata.get("grade", "N/A")
-        page = d.metadata.get("page", "N/A")
-        content_preview = d.page_content[:300] + "..." if len(d.page_content) > 300 else d.page_content
+    try:
+        # Use Agno RAG tool to retrieve concepts by topic
+        retrieved_docs = call_agno_tool(retrieve_financial_concepts_by_topic, topic=concept, k=5)
         
-        # Build detailed source attribution for proof
-        if source_info.startswith("Class_"):
-            pdf_sources_used.add(source_info)
-            source_attributions.append({
-                "type": "PDF",
-                "source": source_info,
-                "topic": topic,
-                "entryId": entry_id,
-                "contentLength": len(d.page_content),
-                "contentPreview": content_preview,
-                "metadata": {
-                    "grade": grade,
-                    "page": page
-                }
-            })
-            # Enhanced RAG chunk with detailed PDF info: PDF name, Topic, Grade, Entry ID
-            rag_chunks.append(f"[Source: {source_info} | Topic: {topic} | Grade: {grade} | Entry ID: {entry_id}]\n{d.page_content}")
-        else:
-            original_kb_count += 1
-            source_attributions.append({
-                "type": "Knowledge Base",
-                "source": "financial_concepts.json",
-                "topic": topic,
-                "entryId": entry_id,
-                "contentLength": len(d.page_content),
-                "contentPreview": content_preview
-            })
-            # Enhanced RAG chunk with KB info: Source, Topic, Entry ID
-            rag_chunks.append(f"[Source: {source_info} | Topic: {topic} | Entry ID: {entry_id}]\n{d.page_content}")
-    
-    rag_context = "\n\n".join(rag_chunks)
-    
-    # Log which sources were used
-    print(f"📚 Retrieved {len(docs)} chunks:")
-    print(f"   - From PDFs: {len(pdf_sources_used)} source(s)")
-    if pdf_sources_used:
-        for pdf_source in pdf_sources_used:
-            print(f"      ✓ {pdf_source}")
-    print(f"   - From original KB: {original_kb_count} chunk(s)")
-    print(f"   - Total context length: {len(rag_context)} characters")
+        # Handle tool response format
+        if not retrieved_docs or (isinstance(retrieved_docs, list) and len(retrieved_docs) > 0 and "error" in retrieved_docs[0]):
+            error_msg = retrieved_docs[0].get("error", "Unknown error") if retrieved_docs else "No documents retrieved"
+            raise RuntimeError(f"RAG retrieval failed: {error_msg}")
+        
+        # Process retrieved documents
+        rag_chunks = []
+        source_attributions = []
+        pdf_sources_used = set()
+        original_kb_count = 0
+        
+        for doc_data in retrieved_docs:
+            content = doc_data.get("content", "")
+            metadata = doc_data.get("metadata", {})
+            source_info = doc_data.get("source", "original knowledge base")
+            topic = doc_data.get("topic", concept)
+            entry_id = doc_data.get("entry_id", metadata.get("id", "unknown"))
+            grade = metadata.get("grade", "N/A")
+            page = metadata.get("page", "N/A")
+            content_preview = content[:300] + "..." if len(content) > 300 else content
+            
+            # Build detailed source attribution
+            if source_info.startswith("Class_"):
+                pdf_sources_used.add(source_info)
+                source_attributions.append({
+                    "type": "PDF",
+                    "source": source_info,
+                    "topic": topic,
+                    "entryId": entry_id,
+                    "contentLength": len(content),
+                    "contentPreview": content_preview,
+                    "metadata": {
+                        "grade": grade,
+                        "page": page
+                    }
+                })
+                rag_chunks.append(f"[Source: {source_info} | Topic: {topic} | Grade: {grade} | Entry ID: {entry_id}]\n{content}")
+            else:
+                original_kb_count += 1
+                source_attributions.append({
+                    "type": "Knowledge Base",
+                    "source": "financial_concepts.json",
+                    "topic": topic,
+                    "entryId": entry_id,
+                    "contentLength": len(content),
+                    "contentPreview": content_preview
+                })
+                rag_chunks.append(f"[Source: {source_info} | Topic: {topic} | Entry ID: {entry_id}]\n{content}")
+        
+        rag_context = "\n\n".join(rag_chunks)
+        
+        # Log which sources were used
+        print(f"📚 Retrieved {len(retrieved_docs)} chunks:")
+        print(f"   - From PDFs: {len(pdf_sources_used)} source(s)")
+        if pdf_sources_used:
+            for pdf_source in pdf_sources_used:
+                print(f"      ✓ {pdf_source}")
+        print(f"   - From original KB: {original_kb_count} chunk(s)")
+        print(f"   - Total context length: {len(rag_context)} characters")
+        
+    except Exception as e:
+        print(f"   ⚠️  Error in RAG retrieval: {e}")
+        raise RuntimeError(f"RAG retrieval failed: {type(e).__name__}: {str(e)}") from e
 
     # 4️⃣ Prompts
     system_prompt = """
@@ -309,8 +260,9 @@ Note: Source attribution will be added automatically by the system.
             "rag_context_length": len(rag_context),
             "rag_context_preview": rag_context[:1000] + "..." if len(rag_context) > 1000 else rag_context,
             "rag_context_with_proof": rag_context,  # Full RAG context with source attribution
+            "tools_used": ["get_next_topic", "retrieve_financial_concepts_by_topic"],
             "source_breakdown": {
-                "total_chunks": len(docs),
+                "total_chunks": len(retrieved_docs),
                 "pdf_chunks": len([s for s in source_attributions if s["type"] == "PDF"]),
                 "kb_chunks": len([s for s in source_attributions if s["type"] == "Knowledge Base"]),
                 "pdf_files_used": list(pdf_sources_used),
@@ -344,7 +296,7 @@ Note: Source attribution will be added automatically by the system.
         },
         "source_proof": {
             "rag_retrieval_summary": {
-                "total_chunks": len(docs),
+                "total_chunks": len(retrieved_docs),
                 "pdf_sources_count": len(pdf_sources_used),
                 "original_kb_count": original_kb_count,
                 "pdf_files_list": list(pdf_sources_used),

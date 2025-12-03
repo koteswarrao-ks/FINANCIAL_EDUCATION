@@ -109,6 +109,10 @@ async def start_learning_journey(child_id: str):
         
         return response
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Orchestration error: {str(e)}")
+        print(f"Traceback:\n{error_trace}")
         raise HTTPException(status_code=500, detail=f"Orchestration failed: {str(e)}")
 
 

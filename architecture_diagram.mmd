@@ -1,0 +1,154 @@
+graph TB
+    subgraph "Frontend Layer (Angular)"
+        UI[User Interface]
+        Login[Login Component]
+        Home[Home Component]
+        Profile[Profile Analysis Component]
+        Story[Story Generation Component]
+        Quiz[Quiz Component]
+        Rewards[Rewards Component]
+        Leaderboard[Leaderboard Component]
+        Service[User Profile Service]
+        
+        UI --> Login
+        UI --> Home
+        UI --> Profile
+        UI --> Story
+        UI --> Quiz
+        UI --> Rewards
+        UI --> Leaderboard
+        Login --> Service
+        Home --> Service
+        Profile --> Service
+        Story --> Service
+        Quiz --> Service
+        Rewards --> Service
+        Leaderboard --> Service
+    end
+    
+    subgraph "Backend API Layer (FastAPI)"
+        API[FastAPI Server<br/>Port 8000]
+        LoginEP[POST /api/login]
+        StartEP[GET /api/start/:child_id]
+        ProfileEP[POST /api/profile/analyze]
+        StoryEP[POST /api/story/generate]
+        QuizEP[POST /api/quiz/generate]
+        SubmitEP[POST /api/submit_quiz/:child_id]
+        RewardsEP[GET /api/rewards/:child_id]
+        LeaderboardEP[GET /api/leaderboard]
+        PrefsEP[GET/POST /api/profile/preferences]
+        
+        API --> LoginEP
+        API --> StartEP
+        API --> ProfileEP
+        API --> StoryEP
+        API --> QuizEP
+        API --> SubmitEP
+        API --> RewardsEP
+        API --> LeaderboardEP
+        API --> PrefsEP
+    end
+    
+    subgraph "Agent Layer (Agno Framework)"
+        Orchestrator[Orchestration Agent<br/>Agno Agent]
+        ProfileAgent[Profile Agent<br/>Agno + Azure OpenAI]
+        StoryAgent[Story Agent<br/>Agno + Azure OpenAI]
+        QuizAgent[Quiz Agent<br/>Agno + Azure OpenAI]
+        GamificationAgent[Gamification Agent<br/>Agno Tools]
+        ProgressAgent[Learning Progress Agent<br/>Agno Tools]
+        
+        Orchestrator --> ProfileAgent
+        Orchestrator --> StoryAgent
+        Orchestrator --> QuizAgent
+        Orchestrator --> ProgressAgent
+        SubmitEP --> GamificationAgent
+        SubmitEP --> ProgressAgent
+    end
+    
+    subgraph "Agno Tools Layer"
+        AgnoTools[Agno Tools Module]
+        MCPTools[MCP Tools<br/>get_user_profile<br/>save_profile_preferences<br/>get_learning_progress<br/>etc.]
+        RAGTools[RAG Tools<br/>retrieve_financial_concepts<br/>retrieve_financial_concepts_by_topic]
+        ProgressTools[Progress Tools<br/>get_next_topic<br/>mark_topic_completed]
+        
+        AgnoTools --> MCPTools
+        AgnoTools --> RAGTools
+        AgnoTools --> ProgressTools
+    end
+    
+    subgraph "Data Persistence Layer (MCP Server)"
+        MCP[MCP Server<br/>Port 5001]
+        UserData[User Data<br/>user_data.json]
+        ProgressData[Learning Progress<br/>learning_progress.json]
+        QuizHistory[Quiz History<br/>quiz_history.json]
+        ProfilePrefs[Profile Preferences<br/>profile_preferences.json]
+        GamificationData[Gamification Data<br/>gamification.json]
+        
+        MCP --> UserData
+        MCP --> ProgressData
+        MCP --> QuizHistory
+        MCP --> ProfilePrefs
+        MCP --> GamificationData
+    end
+    
+    subgraph "RAG System (Direct ChromaDB)"
+        VectorDB[Chroma Vector Database<br/>Direct Access]
+        Embeddings[HuggingFace Embeddings<br/>sentence-transformers<br/>all-MiniLM-L6-v2]
+        PDFs[Source PDFs<br/>Class 6-10 Financial Concepts]
+        RAGRetriever[Semantic Retriever<br/>Direct ChromaDB Query]
+        
+        PDFs --> VectorDB
+        Embeddings --> VectorDB
+        VectorDB --> RAGRetriever
+    end
+    
+    subgraph "External Services"
+        AzureOpenAI[Azure OpenAI<br/>GPT-4o-mini<br/>Direct API Client]
+        DiceBear[DiceBear Avatars API]
+    end
+    
+    %% Frontend to Backend connections
+    Service -->|HTTP REST| API
+    
+    %% Backend to Agents connections
+    StartEP --> Orchestrator
+    ProfileEP --> ProfileAgent
+    StoryEP --> StoryAgent
+    QuizEP --> QuizAgent
+    
+    %% Agents to Agno Tools
+    ProfileAgent --> AgnoTools
+    StoryAgent --> AgnoTools
+    QuizAgent --> AgnoTools
+    GamificationAgent --> AgnoTools
+    ProgressAgent --> AgnoTools
+    
+    %% Agno Tools to MCP connections
+    MCPTools -->|HTTP| MCP
+    
+    %% Agno Tools to RAG connections
+    RAGTools --> RAGRetriever
+    
+    %% Agents to External Services
+    ProfileAgent -->|Direct API| AzureOpenAI
+    StoryAgent -->|Direct API| AzureOpenAI
+    QuizAgent -->|Direct API| AzureOpenAI
+    Service -->|Avatar URLs| DiceBear
+    
+    %% Styling
+    classDef frontend fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef backend fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef agent fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef agno fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef data fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef rag fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    
+    class UI,Login,Home,Profile,Story,Quiz,Rewards,Leaderboard,Service frontend
+    class API,LoginEP,StartEP,ProfileEP,StoryEP,QuizEP,SubmitEP,RewardsEP,LeaderboardEP,PrefsEP backend
+    class Orchestrator,ProfileAgent,StoryAgent,QuizAgent,GamificationAgent,ProgressAgent agent
+    class AgnoTools,MCPTools,RAGTools,ProgressTools agno
+    class MCP,UserData,ProgressData,QuizHistory,ProfilePrefs,GamificationData data
+    class VectorDB,Embeddings,PDFs,RAGRetriever rag
+    class AzureOpenAI,DiceBear external
+

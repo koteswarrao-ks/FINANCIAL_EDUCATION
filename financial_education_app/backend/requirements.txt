@@ -10,10 +10,10 @@ pydantic>=2.7.4,<3.0.0
 openai>=1.109.1,<3.0.0
 agno==0.1.0
 
-# LangChain (supports Azure OpenAI via langchain-openai)
-langchain-core>=1.0.1,<2.0.0
-langchain-openai>=1.0.0  # Supports Azure OpenAI via AzureChatOpenAI
-langchain-community>=0.2.0
+# Agno framework for agents and tools
+agno==0.1.0
+
+# Sentence transformers for embeddings (used directly, not via LangChain)
 sentence-transformers>=2.2.0
 
 chromadb==0.4.24
