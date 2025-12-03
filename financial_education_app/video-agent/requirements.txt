@@ -1,0 +1,38 @@
+# Cartoon Video Agent Dependencies
+
+# OpenAI for GPT-4 (story parsing) and DALL-E 3 (image generation)
+openai>=1.0.0
+
+# Video processing
+moviepy>=1.0.3
+Pillow>=10.0.0
+
+# Audio processing
+pydub>=0.25.1
+
+# HTTP requests for API calls
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Async support
+asyncio-throttle>=1.0.2
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Progress bars
+tqdm>=4.66.0
+rich>=13.0.0
+
+# Replicate for alternative image generation (Stable Diffusion)
+replicate>=0.20.0
+
+# ElevenLabs for high-quality voice narration (optional)
+elevenlabs>=1.0.0
+
+# gTTS for free text-to-speech (no API key needed)
+gTTS>=2.3.0
+
+# Utilities
+numpy>=1.24.0
+
